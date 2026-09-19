@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="辨认注意力中的原始点积分数、缩放分数、归一化权重、单个贡献和汇合向量，并进行可交互手算。">
+<title>注意力符号与手算 · 课件 01</title>
+<style>
+:root { color-scheme: light; --ink:#1d2b36; --muted:#52666e; --accent:#176b70; --line:#dce5e7; --paper:#fff; --wash:#eff6f5; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:#f2f5f5; font-family:"Microsoft YaHei","PingFang SC",sans-serif; font-size:16px; line-height:1.8; }
+main { max-width:1120px; margin:28px auto; padding:36px 44px; background:var(--paper); border:1px solid var(--line); border-radius:10px; }
+a { color:var(--accent); overflow-wrap:anywhere; text-underline-offset:3px; }
+.topline,.actions { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+.topline,.subtle { color:var(--muted); font-size:14px; }
+h1 { font-size:28px; line-height:1.5; margin:14px 0; }
+h2 { font-size:22px; margin:38px 0 16px; padding-top:18px; border-top:2px solid var(--line); }
+p { margin:12px 0; }
+.note { padding:12px 18px; margin:18px 0; background:var(--wash); border-left:4px solid var(--accent); }
+.table-wrap { overflow-x:auto; margin:18px 0; }
+table { width:100%; border-collapse:collapse; }
+th,td { text-align:left; vertical-align:middle; padding:11px 12px; border-bottom:1px solid var(--line); }
+th { color:#204f55; background:var(--wash); font-weight:600; }
+.symbols { min-width:750px; }
+.calculation { min-width:850px; font-variant-numeric:tabular-nums; }
+.formula { margin:18px 0; overflow-x:auto; padding:8px 0; }
+math { font-family:"Cambria Math","STIX Two Math",math; font-size:1.12em; }
+math[display="block"] { margin:0; }
+code { font-family:"Cascadia Code",monospace; background:#eef2f3; padding:2px 5px; border-radius:3px; }
+.controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:18px 0; }
+label { display:block; }
+input[type="number"],select { display:block; width:100%; padding:8px 10px; font:inherit; color:var(--ink); background:var(--paper); border:1px solid #aebfc3; border-radius:5px; }
+.check { display:flex; gap:10px; align-items:center; min-height:44px; }
+.check input { width:18px; height:18px; margin:0; accent-color:var(--accent); }
+button { font:inherit; color:var(--accent); background:var(--paper); border:1px solid #aebfc3; padding:6px 12px; border-radius:5px; cursor:pointer; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:3px solid #739eaf; outline-offset:3px; }
+.output { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 18px; margin:16px 0; background:var(--wash); }
+.output strong { font-variant-numeric:tabular-nums; }
+.error { color:#9b2525; }
+.compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+details { margin:16px 0; padding:12px 0; border-top:1px solid var(--line); }
+summary { cursor:pointer; font-weight:600; }
+.footer { margin-top:30px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
+@media(max-width:720px) { main { margin:10px; padding:22px 16px; } h1 { font-size:24px; } .controls,.compare { grid-template-columns:1fr; } }
+@media print { body { background:white; font-size:11pt; } main { max-width:none; margin:0; padding:0; border:0; } .actions,.controls,.check,button { display:none; } .table-wrap,.formula { overflow:visible; } table,.symbols,.calculation { min-width:0; font-size:9pt; } th,td { padding:6px; } h1,h2 { break-after:avoid; } tr { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<main>
+<div class="topline"><span>LLM 智能体的原理、系统与协作</span><span>课件 01 · 2026-09-19</span></div>
+<h1>注意力：先分清分数、权重与输出</h1>
+<p>这节只修正当前自测暴露的符号混淆，并走一遍完整的手算链。所有数值是教学示例，没有运行或训练语言模型。</p>
+<nav class="actions" aria-label="课程链接">
+<a href="../第一单元-模型计算与实验基线-v0.1.html">第一单元</a>
+<a href="../reviews/2026-09-19-U00-U02-阶段回顾.html">阶段回顾与自测反馈</a>
+<a href="../Attention-Is-All-You-Need-伴读-v0.1.html">原论文伴读</a>
+<button type="button" id="print-lesson">打印 / 保存 PDF</button>
+</nav>
+
+<h2>1. 先看清每个对象是什么</h2>
+<div class="note"><strong>标量</strong>表示“一个数”，是对象类型；<strong>缩放</strong>表示乘或除某个系数，是一种操作。两者不是同一个词。</div>
+<p>本课用 <strong>r</strong> 区分未缩放的点积分数，用 <strong>s</strong> 表示缩放后分数。不同资料可能采用不同记号，阅读时先核对定义。</p>
+<div class="table-wrap">
+<table class="symbols">
+<thead><tr><th>符号</th><th>类型</th><th>定义 / 来源</th><th>作用与边界</th></tr></thead>
+<tbody>
+<tr><td><math><msub><mi>q</mi><mi>i</mi></msub></math></td><td>d<sub>k</sub> 维向量</td><td>位置 i 当前表示的查询投影</td><td>参与决定怎样匹配来源位置。</td></tr>
+<tr><td><math><msub><mi>k</mi><mi>j</mi></msub></math></td><td>d<sub>k</sub> 维向量</td><td>来源位置 j 当前表示的键投影</td><td>与 q 做点积，两者维数需要匹配。</td></tr>
+<tr><td><math><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td><math><msub><mi>q</mi><mi>i</mi></msub><mo>·</mo><msub><mi>k</mi><mi>j</mi></msub></math></td><td>原始匹配分数，可以为负，不是归一化权重。</td></tr>
+<tr><td><math><msub><mi>s</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td><math><mfrac><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></math></td><td>缩放后的匹配分数，仍不要求落在 0—1。</td></tr>
+<tr><td><math><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td>允许为 0，禁止为 −∞</td><td>在本例中，禁止未来位置参加本次汇合。</td></tr>
+<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td>对一整行 s + m 做 softmax 后的第 j 项</td><td>来源 j 的混合系数；对允许来源求和为 1。</td></tr>
+<tr><td><math><msub><mi>v</mi><mi>j</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td>来源位置 j 的值投影</td><td>参与汇合的内容表示。</td></tr>
+<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td>一个标量乘整个向量</td><td>单个来源 j 的贡献，还没有汇总其他来源。</td></tr>
+<tr><td><math><msub><mi>o</mi><mi>i</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td><math><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td>汇总各来源后的读取结果，会继续进入后续网络。</td></tr>
+</tbody>
+</table>
+</div>
+<p>因此，d<sub>k</sub> 与 d<sub>v</sub> 可以不同：点积先把 Q/K 的分量合成一个数，得到的标量权重可以乘另一种宽度的 V。各个待相加的 V 则要有相同宽度。</p>
+<div class="formula" aria-label="权重等于施加遮罩后的缩放分数经过逐行 softmax">
+<math display="block">
+<msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo>
+<mfrac>
+<mrow><mi mathvariant="normal">exp</mi><mo>(</mo><msub><mi>s</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>)</mo></mrow>
+<mrow><munder><mo>∑</mo><mi>ℓ</mi></munder><mi mathvariant="normal">exp</mi><mo>(</mo><msub><mi>s</mi><mrow><mi>i</mi><mi>ℓ</mi></mrow></msub><mo>+</mo><msub><mi>m</mi><mrow><mi>i</mi><mi>ℓ</mi></mrow></msub><mo>)</mo></mrow>
+</mfrac>
+</math>
+</div>
+<p class="subtle">ℓ 是遍历所有来源位置的求和索引。a 由整行分数共同决定，不是把每一个分数分别乘某个固定系数。</p>
+
+<h2>2. 新例：沿着 r → s → a 走一遍</h2>
+<p>当前读取位置为 <strong>i = 2</strong>。输入三个已经算好的原始点积分数 r，再观察缩放、遮罩与归一化。本例从分数重新算权重；它与自测 B 直接给出权重的条件不同。</p>
+<div class="controls">
+<label>来源 1 的原始分数 r₂₁<input id="raw-1" type="number" value="4" min="-100" max="100" step="1"></label>
+<label>来源 2 的原始分数 r₂₂<input id="raw-2" type="number" value="0" min="-100" max="100" step="1"></label>
+<label>来源 3 的原始分数 r₂₃<input id="raw-3" type="number" value="20" min="-100" max="100" step="1"></label>
+<label>Q/K 的维数 dₖ<select id="key-dimension"><option value="1">1，除以 1</option><option value="4" selected>4，除以 2</option><option value="16">16，除以 4</option></select></label>
+<label>v₂ 的第二个分量<input id="value-y" type="number" value="8" min="0" max="16" step="1"></label>
+</div>
+<label class="check"><input id="causal-mask" type="checkbox" checked>因果遮罩：位置 2 禁止读取未来位置 3</label>
+<p class="subtle">这里改变 dₖ 只用于比较缩放系数，r 保持你输入的值；不是在测量真实网络扩维的效果。v₁=(4,0)，v₂=(0,可调)，v₃=(999,999)。</p>
+<p id="attention-error" class="error" role="alert" hidden></p>
+<div class="table-wrap" role="region" aria-label="逐来源注意力计算结果">
+<table class="calculation">
+<thead><tr><th>来源 j</th><th>原始 r₂ⱼ</th><th>缩放 s₂ⱼ</th><th>遮罩后 s+m</th><th>权重 a₂ⱼ</th><th>内容 vⱼ</th><th>单个贡献 a₂ⱼvⱼ</th></tr></thead>
+<tbody id="attention-rows"></tbody>
+</table>
+</div>
+<div class="output" aria-live="polite" aria-atomic="true">
+<span>第二个位置的汇合结果</span>
+<math><msub><mi>o</mi><mn>2</mn></msub><mo>=</mo><mo>(</mo><mn id="output-x">3.5232</mn><mo>,</mo><mn id="output-y">0.9536</mn><mo>)</mo></math>
+</div>
+<p class="subtle">显示值四舍五入。被遮罩的位置权重严格为 0；非常小但未遮罩的权重也可能显示为 0.0000。输出向量的分量不需要相加为 1。</p>
+<button id="restore-example" type="button">还原本例</button>
+
+<h2>3. 更新量：学习率乘梯度，再取负号</h2>
+<p>这里讨论一个参数的简单梯度下降。g 是该参数处的损失梯度，η 是学习率，Δw 是实际更新量。</p>
+<div class="formula">
+<math display="block"><mi>Δ</mi><mi>w</mi><mo>=</mo><mo>−</mo><mi>η</mi><mi>g</mi><mspace width="2em"></mspace><msub><mi>w</mi><mtext>新</mtext></msub><mo>=</mo><msub><mi>w</mi><mtext>旧</mtext></msub><mo>+</mo><mi>Δ</mi><mi>w</mi></math>
+</div>
+<div class="controls">
+<label>梯度 g<input id="gradient" type="number" value="-0.6" min="-10" max="10" step="0.1"></label>
+<label>学习率 η<input id="learning-rate" type="number" value="0.1" min="0" max="1" step="0.01"></label>
+</div>
+<p id="update-error" class="error" role="alert" hidden></p>
+<div class="output" aria-live="polite" aria-atomic="true"><span id="update-expression">−0.1 × (−0.6)</span><strong id="update-value">Δw = +0.06</strong></div>
+<div class="note">−(0.6 − 0.1) 算得 −0.5，不是本题的更新规则。得到正确数字之后，还要核对它是否来自正确运算。</div>
+
+<h2>4. 用旧知识作三个检查</h2>
+<details><summary>为什么 r、s 可以为负，而 a 不能为负？</summary><p>r、s 是分数，没有概率范围约束；a 经过指数与归一化，在本例中是非负的混合权重。</p></details>
+<details><summary>如果只改未来位置的 v₃，遮罩有效时 o₂ 会变吗？</summary><p>在这次受控运算里不会：a₂₃ 为 0。真实模型的依赖检查还需要控制前缀、参数、随机性、位置与缓存条件。</p></details>
+<details><summary>梯度为 +0.4，学习率为 0.05，更新量是多少？</summary><p>Δw = −0.05 × 0.4 = −0.02。参数沿负方向更新。</p></details>
+<p>冻结权重后，未来 token 的改变若影响了较早位置，应排查未来信息是否进入了计算路径；这里讨论的是<strong>信息泄漏</strong>，不是“参数泄露”或新发生的训练更新。</p>
+<div class="footer">本节统一教学记号并提供纯数学交互。原始方法参见 <a href="https://arxiv.org/html/1706.03762v7#S3.SS2">Attention Is All You Need §3.2</a>。参数投影、多头和完整实现会在对象含义稳定后逐步接入。</div>
+</main>
+<script>
+(function () {
+  const byId = function (id) { return document.getElementById(id); };
+  const rawInputs = [byId('raw-1'), byId('raw-2'), byId('raw-3')];
+  const dimension = byId('key-dimension');
+  const mask = byId('causal-mask');
+  const valueY = byId('value-y');
+  const rows = byId('attention-rows');
+  const error = byId('attention-error');
+  const gradient = byId('gradient');
+  const rate = byId('learning-rate');
+  function numberText(value, digits) {
+    if (value === -Infinity) return '−∞';
+    const result = Math.abs(value) < 1e-12 ? 0 : value;
+    return result.toFixed(digits === undefined ? 4 : digits).replace(/\.?0+$/, '').replace('-', '−') || '0';
+  }
+  function vectorText(vector) { return '(' + vector.map(function (v) { return numberText(v); }).join(', ') + ')'; }
+  function attention() {
+    const raw = rawInputs.map(function (input) { return input.valueAsNumber; });
+    const dk = Number(dimension.value);
+    const vy = valueY.valueAsNumber;
+    if (!raw.every(function (v) { return Number.isFinite(v) && Math.abs(v) <= 100; }) || ![1,4,16].includes(dk) || !Number.isFinite(vy) || vy < 0 || vy > 16) {
+      error.hidden = false;
+      error.textContent = '请填写范围内的有限数值：分数 −100—100，v₂ 第二分量 0—16。';
+      return;
+    }
+    error.hidden = true;
+    const scaled = raw.map(function (v) { return v / Math.sqrt(dk); });
+    const visible = scaled.map(function (v, j) { return mask.checked && j === 2 ? -Infinity : v; });
+    const maximum = Math.max.apply(null, visible);
+    const numerators = visible.map(function (v) { return Math.exp(v - maximum); });
+    const sum = numerators.reduce(function (a,b) { return a+b; },0);
+    const weights = numerators.map(function (v) { return v / sum; });
+    const values = [[4,0],[0,vy],[999,999]];
+    const contributions = values.map(function (vector,j) { return vector.map(function (v) { return weights[j]*v; }); });
+    const output = [0,1].map(function (d) { return contributions.reduce(function (total,v) { return total+v[d]; },0); });
+    rows.replaceChildren();
+    raw.forEach(function (r,j) {
+      const tr = document.createElement('tr');
+      const cells = [String(j+1),numberText(r),numberText(scaled[j]),numberText(visible[j]),weights[j].toFixed(4),vectorText(values[j]),vectorText(contributions[j])];
+      cells.forEach(function (text,index) { const cell=document.createElement(index===0?'th':'td'); if(index===0)cell.scope='row'; cell.textContent=text; tr.appendChild(cell); });
+      rows.appendChild(tr);
+    });
+    byId('output-x').textContent=output[0].toFixed(4);
+    byId('output-y').textContent=output[1].toFixed(4);
+    rows.dataset.weights=JSON.stringify(weights);
+    rows.dataset.scaled=JSON.stringify(scaled);
+    rows.dataset.output=JSON.stringify(output);
+  }
+  function updateStep() {
+    const g=gradient.valueAsNumber, eta=rate.valueAsNumber, alert=byId('update-error');
+    if(!Number.isFinite(g)||Math.abs(g)>10||!Number.isFinite(eta)||eta<0||eta>1) {
+      alert.hidden=false;alert.textContent='请填写有限数值：梯度 −10—10，学习率 0—1。';return;
+    }
+    alert.hidden=true;
+    const delta=-eta*g;
+    byId('update-expression').textContent='−' + numberText(eta) + ' × (' + numberText(g) + ')';
+    byId('update-value').textContent='Δw = ' + (delta>0?'+':'') + numberText(delta);
+    byId('update-value').dataset.delta=String(delta);
+  }
+  rawInputs.concat([dimension,valueY]).forEach(function (input) { input.addEventListener('input',attention); });
+  mask.addEventListener('change',attention);
+  [gradient,rate].forEach(function (input) { input.addEventListener('input',updateStep); });
+  byId('restore-example').addEventListener('click',function () {
+    [4,0,20].forEach(function (v,i) { rawInputs[i].value=String(v); });
+    dimension.value='4';valueY.value='8';mask.checked=true;attention();
+  });
+  byId('print-lesson').addEventListener('click',function () { window.print(); });
+  attention();updateStep();
+})();
+</script>
+</body>
+</html>

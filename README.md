@@ -17,9 +17,13 @@
 
 本次交付以课程设计为主：环境采集脚本已实现，教学模型、训练、推理引擎与研究实验待实施。先完成 U00—U03 的可解释基线，再校准课时与资源。
 
+## 可交互课件
+
+- [课件 01：注意力符号与手算](docs/lessons/attention-symbols-01.html)：以数学排版和可调计算区分 r/s/a、单个贡献与汇合结果，并核对参数更新量。
+
 ## 学习回顾
 
-- [阶段回顾 01：从系统边界到单头注意力](docs/reviews/2026-09-19-U00-U02-阶段回顾.md) · [阅读版](docs/reviews/2026-09-19-U00-U02-阶段回顾.html)：知识要点、心得草稿、基于问答的掌握度暂评和三道复习题。当前为阶段回顾，完整实现与训练仍待开展。
+- [阶段回顾 01 — HTML 阅读版](docs/reviews/2026-09-19-U00-U02-阶段回顾.html) · [Markdown 源文档](docs/reviews/2026-09-19-U00-U02-阶段回顾.md)：知识要点、心得、自测前暂评、本轮 A/B/C 作答反馈与订正。完整实现与训练仍待开展。
 
 ## 当前文档
 
@@ -59,3 +63,5 @@ python3 scripts/render_document.py
 ```bash
 python3 scripts/render_document.py docs/课程实施方案-v0.1.md docs/第一单元-模型计算与实验基线-v0.1.md
 ```
+
+交互课件位于 docs/lessons/，其 HTML 是直接维护的源文件，不用上述静态 Markdown 渲染器覆盖。静态教案与阶段回顾仍从 Markdown 生成阅读版。
