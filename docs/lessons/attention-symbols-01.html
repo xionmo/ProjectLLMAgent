@@ -62,17 +62,17 @@ summary { cursor:pointer; font-weight:600; }
 <p>本课用 <strong>r</strong> 区分未缩放的点积分数，用 <strong>s</strong> 表示缩放后分数。不同资料可能采用不同记号，阅读时先核对定义。</p>
 <div class="table-wrap">
 <table class="symbols">
-<thead><tr><th>符号</th><th>类型</th><th>定义 / 来源</th><th>作用与边界</th></tr></thead>
+<thead><tr><th>符号</th><th>简称</th><th>类型</th><th>定义 / 来源</th><th>作用与边界</th></tr></thead>
 <tbody>
-<tr><td><math><msub><mi>q</mi><mi>i</mi></msub></math></td><td>d<sub>k</sub> 维向量</td><td>位置 i 当前表示的查询投影</td><td>参与决定怎样匹配来源位置。</td></tr>
-<tr><td><math><msub><mi>k</mi><mi>j</mi></msub></math></td><td>d<sub>k</sub> 维向量</td><td>来源位置 j 当前表示的键投影</td><td>与 q 做点积，两者维数需要匹配。</td></tr>
-<tr><td><math><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td><math><msub><mi>q</mi><mi>i</mi></msub><mo>·</mo><msub><mi>k</mi><mi>j</mi></msub></math></td><td>原始匹配分数，可以为负，不是归一化权重。</td></tr>
-<tr><td><math><msub><mi>s</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td><math><mfrac><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></math></td><td>缩放后的匹配分数，仍不要求落在 0—1。</td></tr>
-<tr><td><math><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td>允许为 0，禁止为 −∞</td><td>在本例中，禁止未来位置参加本次汇合。</td></tr>
-<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td>标量</td><td>对一整行 s + m 做 softmax 后的第 j 项</td><td>来源 j 的混合系数；对允许来源求和为 1。</td></tr>
-<tr><td><math><msub><mi>v</mi><mi>j</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td>来源位置 j 的值投影</td><td>参与汇合的内容表示。</td></tr>
-<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td>一个标量乘整个向量</td><td>单个来源 j 的贡献，还没有汇总其他来源。</td></tr>
-<tr><td><math><msub><mi>o</mi><mi>i</mi></msub></math></td><td>d<sub>v</sub> 维向量</td><td><math><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td>汇总各来源后的读取结果，会继续进入后续网络。</td></tr>
+<tr><td><math><msub><mi>q</mi><mi>i</mi></msub></math></td><td><strong>查询</strong><br><span class="subtle">Query</span></td><td>d<sub>k</sub> 维向量</td><td>位置 i 当前表示的查询投影</td><td>参与决定怎样匹配来源位置。</td></tr>
+<tr><td><math><msub><mi>k</mi><mi>j</mi></msub></math></td><td><strong>键</strong><br><span class="subtle">Key</span></td><td>d<sub>k</sub> 维向量</td><td>来源位置 j 当前表示的键投影</td><td>与 q 做点积，两者维数需要匹配。</td></tr>
+<tr><td><math><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td><strong>原始分数</strong><br><span class="subtle">Raw score</span></td><td>标量</td><td><math><msub><mi>q</mi><mi>i</mi></msub><mo>·</mo><msub><mi>k</mi><mi>j</mi></msub></math></td><td>原始匹配分数，可以为负，不是归一化权重。</td></tr>
+<tr><td><math><msub><mi>s</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td><strong>缩放分数</strong><br><span class="subtle">Scaled score</span></td><td>标量</td><td><math><mfrac><msub><mi>r</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></math></td><td>缩放后的匹配分数，仍不要求落在 0—1。</td></tr>
+<tr><td><math><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td><strong>遮罩值</strong><br><span class="subtle">Additive mask</span></td><td>标量</td><td>0：不改分数，允许<br>−∞：完全屏蔽，禁止</td><td>在本例中，禁止未来位置参加本次汇合。</td></tr>
+<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></td><td><strong>注意力权重</strong><br><span class="subtle">Attention weight</span></td><td>标量</td><td>对一整行 s + m 做 softmax 后的第 j 项</td><td>来源 j 的混合系数；对允许来源求和为 1。</td></tr>
+<tr><td><math><msub><mi>v</mi><mi>j</mi></msub></math></td><td><strong>值</strong><br><span class="subtle">Value</span></td><td>d<sub>v</sub> 维向量</td><td>来源位置 j 的值投影</td><td>参与汇合的内容表示。</td></tr>
+<tr><td><math><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td><strong>单项贡献</strong><br><span class="subtle">Contribution</span></td><td>d<sub>v</sub> 维向量</td><td>一个标量乘整个向量</td><td>单个来源 j 的贡献，还没有汇总其他来源。</td></tr>
+<tr><td><math><msub><mi>o</mi><mi>i</mi></msub></math></td><td><strong>汇合结果</strong><br><span class="subtle">Attention output</span></td><td>d<sub>v</sub> 维向量</td><td><math><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>v</mi><mi>j</mi></msub></math></td><td>汇总各来源后的读取结果，会继续进入后续网络。</td></tr>
 </tbody>
 </table>
 </div>
@@ -87,6 +87,10 @@ summary { cursor:pointer; font-weight:600; }
 </math>
 </div>
 <p class="subtle">ℓ 是遍历所有来源位置的求和索引。a 由整行分数共同决定，不是把每一个分数分别乘某个固定系数。</p>
+<div class="note"><strong>本课的 mask 是加到分数上的数值。</strong>m=0 保留原分数，所以允许；m=−∞ 使这一项的指数为 0，所以禁止。它不按绝对值衡量影响强弱。某些接口使用布尔或 0/1 标志，那是另一种编码，需另查定义。</div>
+<p><strong>哪一个是 logits？</strong>在这一步，送入 softmax 的一行 <strong>s+m</strong> 可称为<strong>注意力 logits</strong>：每项对应一个来源位置。没有 mask 时就是 s。它不同于最终词表 logits，后者每项对应一个候选 token。</p>
+<p>a<sub>ij</sub>v<sub>j</sub> 和 o<sub>i</sub> 是内容贡献与汇合后的特征向量。它们还要进入后续网络；最终词表输出层再产生下一 token 的 logits。不能因为都是一串数，就忽略每个分量所代表的对象。</p>
+
 
 <h2>2. 新例：沿着 r → s → a 走一遍</h2>
 <p>当前读取位置为 <strong>i = 2</strong>。输入三个已经算好的原始点积分数 r，再观察缩放、遮罩与归一化。本例从分数重新算权重；它与自测 B 直接给出权重的条件不同。</p>
@@ -102,7 +106,7 @@ summary { cursor:pointer; font-weight:600; }
 <p id="attention-error" class="error" role="alert" hidden></p>
 <div class="table-wrap" role="region" aria-label="逐来源注意力计算结果">
 <table class="calculation">
-<thead><tr><th>来源 j</th><th>原始 r₂ⱼ</th><th>缩放 s₂ⱼ</th><th>遮罩后 s+m</th><th>权重 a₂ⱼ</th><th>内容 vⱼ</th><th>单个贡献 a₂ⱼvⱼ</th></tr></thead>
+<thead><tr><th>来源 j</th><th>原始 r₂ⱼ</th><th>缩放 s₂ⱼ</th><th>遮罩 m₂ⱼ</th><th>送入 softmax 的 s+m<br>注意力 logits</th><th>权重 a₂ⱼ</th><th>内容 vⱼ</th><th>单个贡献 a₂ⱼvⱼ</th></tr></thead>
 <tbody id="attention-rows"></tbody>
 </table>
 </div>
@@ -172,7 +176,7 @@ summary { cursor:pointer; font-weight:600; }
     rows.replaceChildren();
     raw.forEach(function (r,j) {
       const tr = document.createElement('tr');
-      const cells = [String(j+1),numberText(r),numberText(scaled[j]),numberText(visible[j]),weights[j].toFixed(4),vectorText(values[j]),vectorText(contributions[j])];
+      const cells = [String(j+1),numberText(r),numberText(scaled[j]),mask.checked && j === 2 ? '−∞' : '0',numberText(visible[j]),weights[j].toFixed(4),vectorText(values[j]),vectorText(contributions[j])];
       cells.forEach(function (text,index) { const cell=document.createElement(index===0?'th':'td'); if(index===0)cell.scope='row'; cell.textContent=text; tr.appendChild(cell); });
       rows.appendChild(tr);
     });
