@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LLM 智能体课程的培养目标、能力标准、先修关系与实验设计。">
+<title>培养目标与能力标准 v0.1 · LLM 智能体的原理、系统与协作</title>
+<style>
+:root { color-scheme: light; --ink: #1d2b36; --muted: #5c6f79;
+  --accent: #176b70; --border: #dce5e7; --paper: #fff; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; background: #f2f5f5; color: var(--ink);
+  font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 16px; line-height: 1.85; }
+a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.layout { max-width: 1440px; margin: auto; display: grid;
+  grid-template-columns: 280px minmax(0, 1fr); gap: 28px; padding: 28px; }
+nav { position: sticky; top: 24px; height: calc(100vh - 48px); overflow-y: auto;
+  padding: 10px 16px 24px 0; font-size: 13px; }
+.eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .12em; }
+.nav-title { font-size: 19px; font-weight: 700; line-height: 1.6; margin: 8px 0; }
+.nav-meta { color: var(--muted); font-size: 12px; margin: 8px 0 20px; }
+nav ul { list-style: none; padding: 0; margin: 0; }
+nav li { margin: 0 0 4px; }
+nav a { display: block; padding: 6px 8px; border-radius: 6px;
+  text-decoration: none; color: var(--muted); }
+nav a:hover, nav a:focus { background: #e1ecec; color: var(--accent); }
+.nav-sub { padding-left: 12px; font-size: 12px; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  margin: 0 0 20px; }
+.actions a, button { border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; background: white; color: var(--accent); font: inherit;
+  font-size: 12px; cursor: pointer; text-decoration: none; }
+main { min-width: 0; background: var(--paper); padding: 48px 56px;
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 4px 24px #16383a05; }
+h1 { font-size: 29px; line-height: 1.5; letter-spacing: -.015em; margin: 0 0 24px; }
+h2 { font-size: 23px; line-height: 1.55; margin: 56px 0 22px;
+  padding-top: 18px; border-top: 2px solid #d5e7e6; }
+h3 { font-size: 18px; line-height: 1.6; margin: 30px 0 14px; }
+p { margin: 14px 0; }
+strong { color: #143d44; }
+li { margin: 7px 0; }
+blockquote { margin: 24px 0; padding: 6px 20px; background: #eff7f6;
+  border-left: 4px solid var(--accent); }
+.table-wrap { overflow-x: auto; margin: 22px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; line-height: 1.75; }
+th, td { text-align: left; vertical-align: top; padding: 11px 12px;
+  border: 1px solid var(--border); min-width: 100px; }
+th { background: #edf5f4; color: #204f55; font-weight: 700; }
+tbody tr:nth-child(even) { background: #fafcfc; }
+code { font-family: "Cascadia Code", "Noto Sans Mono CJK SC", monospace;
+  font-size: .88em; background: #eef2f3; padding: 2px 5px; border-radius: 3px; }
+pre { overflow-x: auto; border-radius: 7px; background: #edf2f4;
+  border: 1px solid var(--border); padding: 18px; line-height: 1.7; }
+pre code { padding: 0; background: none; }
+.footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 220px minmax(0, 1fr); gap: 16px; padding: 16px; }
+  main { padding: 32px 28px; }
+}
+@media (max-width: 720px) {
+  .layout { display: block; padding: 12px; }
+  nav { position: static; height: auto; max-height: 320px; margin-bottom: 20px; }
+  main { padding: 28px 20px; } h1 { font-size: 24px; } h2 { font-size: 21px; }
+}
+@media print {
+  html { scroll-behavior: auto; }
+  @page { size: A4; margin: 18mm 15mm; }
+  body { background: white; font-size: 10pt; line-height: 1.7; }
+  .layout { display: block; padding: 0; } nav, .actions { display: none; }
+  main { border: 0; padding: 0; box-shadow: none; }
+  h1 { font-size: 21pt; } h2 { font-size: 15pt; margin-top: 28px; }
+  h3 { font-size: 12pt; } h1, h2, h3 { break-after: avoid; }
+  p { orphans: 3; widows: 3; }
+  .table-wrap { overflow: visible; } table { font-size: 8pt; }
+  th, td { min-width: 0; padding: 6px; } tr { break-inside: avoid; }
+  pre { white-space: pre-wrap; overflow: visible; font-size: 8pt; }
+  a { color: #176b70; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav aria-label="文档目录">
+<div class="eyebrow">AGENTS 万事通</div>
+<div class="nav-title">培养目标与能力标准</div>
+<div class="nav-meta">v0.1 · 2026-09-17<br>研究式学习与课程筹备</div>
+<div class="actions"><a href="培养目标与能力标准-v0.1.md">Markdown 源文档</a>
+<button type="button" onclick="window.print()">打印 / 保存 PDF</button></div>
+<ul><li><a href="#section-2">1. 培养使命与项目定位</a></li>
+<li><a href="#section-6">2. 共同语言与证据边界</a></li>
+<li><a href="#section-11">3. 培养目标与达标证据</a></li>
+<li><a href="#section-15">4. 先修知识与学习依赖</a></li>
+<li><a href="#section-18">5. 九个知识模块的能力标准</a></li>
+<li class="nav-sub"><a href="#section-19">M1. 语言模型的能力从哪里来</a></li>
+<li class="nav-sub"><a href="#section-20">M2. 数据与能力塑造</a></li>
+<li class="nav-sub"><a href="#section-21">M3. 推理、规划与验证</a></li>
+<li class="nav-sub"><a href="#section-22">M4. 推理服务、硬件与量化</a></li>
+<li class="nav-sub"><a href="#section-23">M5. 上下文、知识与记忆</a></li>
+<li class="nav-sub"><a href="#section-24">M6. 单 Agent、工具与 harness</a></li>
+<li class="nav-sub"><a href="#section-25">M7. 多 Agent 与组织设计</a></li>
+<li class="nav-sub"><a href="#section-26">M8. 评测、安全、可靠性与研究方法</a></li>
+<li class="nav-sub"><a href="#section-27">M9. 人、认知、组织与学习</a></li>
+<li><a href="#section-28">6. 技术历史的学习标准</a></li>
+<li><a href="#section-29">7. 实验与达标证据索引</a></li>
+<li><a href="#section-30">8. 旗舰实验 A：多轮任务的上下文压缩与恢复</a></li>
+<li><a href="#section-36">9. 旗舰实验 B：KCS 双循环与人类参与的知识演化</a></li>
+<li><a href="#section-42">10. 统一实验与研究规范</a></li>
+<li><a href="#section-47">11. 综合项目与方向专精</a></li>
+<li><a href="#section-50">12. 课程负责人的推进关卡与资源原则</a></li>
+<li><a href="#section-51">13. 可复现与教学材料的交付格式</a></li>
+<li><a href="#section-52">14. 待补证据与版本管理</a></li></ul>
+</nav>
+<main>
+<h1 id="section-1">《LLM 智能体的原理、系统与协作》</h1>
+<p><strong>培养目标与能力标准 · v0.1</strong></p>
+<p>日期：2026-09-17<br />
+状态：研究式学习与课程筹备用建议稿<br />
+面向：课程负责人、参与建设的研究者，以及未来修读课程的硕士与博士生<br />
+项目工作名：Agents 万事通</p>
+<p>本文件定义培养目标、知识边界、实践深度和达标证据。当前首先服务于课程负责人的系统学习与研究；正式学时、学分、授课顺序和学生工作量，根据实际复现与试教再确定。所有实验均为待实施设计，文中没有宣称已经取得实验结果。</p>
+<h2 id="section-2">1. 培养使命与项目定位</h2>
+<h3 id="section-3">1.1 培养使命</h3>
+<p>面对陌生领域中的真实任务，能够建立任务与评价标准，联合设计模型、数据、harness、工具环境和推理服务；能够沿着系统各层定位问题，通过可复现实验改进表现，并解释方案的适用条件、代价与局限。</p>
+<p>培养对象应同时具备端到端交付能力、机制理解、研究判断与知识迁移能力。FDE 在本文指深入业务现场、承担端到端交付的工程师，其任务定义和交付能力是本课程画像的一部分。</p>
+<h3 id="section-4">1.2 已对齐的建设原则</h3>
+<ol>
+<li>正式课程名采用《LLM 智能体的原理、系统与协作》。</li>
+<li>课程负责人先深入各个知识板块，再决定教学取舍；不先用一学期限制学习范围。</li>
+<li>教育目标是 AI 全栈通才与方向专才的结合。广度体现为跨层理解与诊断，深度通过复现、测量和研究证据体现。</li>
+<li>重要历史技术节点应学习其问题背景、机制和适用边界，必要时安排复现与迁移实验。</li>
+<li>心理学、神经科学、社会学、组织研究和教育学通过具体问题与证据进入课程。</li>
+<li>QuantML 保持独立运行，作为可选案例。主学习路线覆盖软件、知识服务、科研及其他领域。</li>
+<li>课程材料逐步沉淀为知识节点、原始文献、最小实现、实验记录、反例和教学说明。</li>
+</ol>
+<h3 id="section-5">1.3 最终应能完成的工作</h3>
+<p>毕业者应能接手一个信息不完整、预算有限、会出现失败的任务环境，完成需求澄清、基线建立、模型与系统选型、实现、评价、交接和后续改进。他应能回答：</p>
+<ul>
+<li>哪一类任务值得引入模型决策，哪些步骤已有可靠的确定性实现？</li>
+<li>一个失败主要来自能力不足、信息不足、状态错误、工具接口、资源约束，还是评价方式？</li>
+<li>增加模型能力、推理计算、检索、训练数据或 Agent 数量，哪项干预最值得先试？</li>
+<li>一项改进换到不同任务、模型、数据分布或硬件条件后，为什么可能失效？</li>
+<li>人承担了哪些判断与补救工作，这些投入是否已经计入系统成本？</li>
+</ul>
+<h2 id="section-6">2. 共同语言与证据边界</h2>
+<h3 id="section-7">2.1 关键对象</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>本课程采用的工作定义</th>
+<th>需要辨认的边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语言模型</td>
+<td>通过参数化计算，在给定条件下产生 token 分布的模型；多模态模型还接受其他形式的输入表示</td>
+<td>模型权重、推理状态、外部知识与运行时逻辑属于不同对象</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>围绕目标，在环境中反复观察、选择行动、获取反馈并更新工作状态的系统</td>
+<td>自动运行不自动意味着具有模型驱动的自主决策</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>对任务步骤、依赖关系和控制流程的组织</td>
+<td>预定流程与动态决策可以组合使用</td>
+</tr>
+<tr>
+<td>Agent harness</td>
+<td>将模型组织成可运行 Agent 的系统，包括上下文准备、工具执行、状态、事件、资源控制和结果处理</td>
+<td>应能区分复用现成运行时、增加业务编排、修改运行时内部机制</td>
+</tr>
+<tr>
+<td>推理服务</td>
+<td>装载模型并执行、调度生成请求的服务系统</td>
+<td>与业务层任务规划、长期记忆和验收逻辑分别建模</td>
+</tr>
+<tr>
+<td>上下文</td>
+<td>一次模型计算实际获得的信息及其表示</td>
+<td>硬盘上存在的文件不一定已经进入上下文</td>
+</tr>
+<tr>
+<td>持久记忆</td>
+<td>跨调用或跨会话保存、选择、更新并再次使用的信息</td>
+<td>必须说明写入、检索、时效、冲突、更正与删除机制</td>
+</tr>
+<tr>
+<td>轨迹</td>
+<td>一次任务执行中可记录的观察、输出、工具调用、反馈与状态变化</td>
+<td>可见推理文本不等于可直接观测全部内部计算机制</td>
+</tr>
+</tbody>
+</table></div>
+<p>上述术语用于统一课程中的系统边界。Agent 与 workflow 可参考 <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a>；harness、轨迹与环境最终状态的区分可参考 <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Demystifying evals for AI agents</a>。</p>
+<h3 id="section-8">2.2 “压缩”的四个维度</h3>
+<p>讨论压缩时，必须同时写明压缩对象、算法、执行位置和保真标准。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>作用对象</th>
+<th>常见产物或结果</th>
+<th>必须检验什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>会话 compaction</td>
+<td>消息、工具结果及会话状态的表示</td>
+<td>摘要、保留消息或服务商定义的压缩项</td>
+<td>后续行动是否保留必要约束与信息</td>
+</tr>
+<tr>
+<td>结构化 handoff</td>
+<td>任务目标、事实、进度、决策、未完成项</td>
+<td>可阅读、可版本化的交接材料</td>
+<td>下一会话能否恢复真实工作状态</td>
+</tr>
+<tr>
+<td>持久记忆提取</td>
+<td>可跨任务复用的经验或事实</td>
+<td>文件、数据库记录、检索条目等</td>
+<td>来源、适用范围、时效与更新正确性</td>
+</tr>
+<tr>
+<td>KV 量化或裁剪</td>
+<td>注意力推理状态中的数值或条目</td>
+<td>更低精度或更少的缓存状态</td>
+<td>数值与任务质量变化、长程依赖损失</td>
+</tr>
+<tr>
+<td>前缀缓存复用</td>
+<td>已计算的相同兼容前缀状态</td>
+<td>避免重复 prefill</td>
+<td>命中条件、兼容性、冷暖缓存差异</td>
+</tr>
+<tr>
+<td>分层存储与迁移</td>
+<td>缓存所处介质和位置</td>
+<td>GPU、主存与存储后端之间的数据移动</td>
+<td>传输与重计算代价、命中率和延迟</td>
+</tr>
+</tbody>
+</table></div>
+<p>“本地压缩”在本文不作为独立算法名。应使用“客户端管理的会话摘要”“本地保存的 handoff”“服务端执行的压缩”等具体表述。客户端触发、文件在本地保存、模型在本机推理，是三个独立属性。</p>
+<p>Claude Code 的公开文档描述了清理旧工具输出、必要时摘要会话的上下文管理，以及 <code>/compact</code> 的定向摘要用途。持久记忆文件有独立的加载和维护机制。因此，<code>/compact</code> 不能直接等同于创建一套 handoff 文档或长期记忆。<a href="https://code.claude.com/docs/en/how-claude-code-works">Claude Code 工作原理</a>，<a href="https://code.claude.com/docs/en/memory">Claude Code 记忆机制</a></p>
+<p>OpenAI 的公开 compaction 接口提供不供人直接解释的加密压缩项。接口行为可以被测试，其未公开的内部实现不能被当成已知的 token 删除、普通摘要或 KV 裁剪算法。<a href="https://developers.openai.com/api/docs/guides/compaction">OpenAI Compaction</a></p>
+<h3 id="section-9">2.3 自改进与 RSI</h3>
+<p>RSI 在本文按 Recursive Self-Improvement 理解。相关研究的用法并不完全统一，本课程采用以下操作性分类，而不以一个标签代替实验说明。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>被改变的对象</th>
+<th>可能的改进方式</th>
+<th>应报告的事实</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>知识库、记忆</td>
+<td>增补事实、重构条目、修正过期知识</td>
+<td>哪些外部资产改变，依据来自哪里</td>
+</tr>
+<tr>
+<td>Prompt、工具、harness</td>
+<td>修改接口、提示、控制逻辑、检查器</td>
+<td>哪些运行策略改变，版本与验证结果</td>
+</tr>
+<tr>
+<td>模型参数</td>
+<td>微调、蒸馏、偏好学习、强化学习</td>
+<td>数据、目标、更新过程与退化情况</td>
+</tr>
+<tr>
+<td>改进过程本身</td>
+<td>修改任务生成、搜索、训练或改进策略</td>
+<td>新过程能否在独立条件下产生更有效的后续改进</td>
+</tr>
+</tbody>
+</table></div>
+<p>自改进可以发生在模型权重之外。若使用“递归”一词，应明确改进结果如何反馈到未来的改进过程，并检验多轮效果；不能从单次收益推断无限持续进步。</p>
+<p>两个不同的公开参照是：通过修改 Agent 代码并执行基准检验的 <a href="https://arxiv.org/abs/2505.22954">Darwin Gödel Machine</a>，以及让模型生成适配数据和更新指令、再评价更新后表现的 <a href="https://arxiv.org/abs/2506.10943">SEAL</a>。这些工作支持研究路线的可行性，不直接验证本项目听闻的具体业务案例。</p>
+<h3 id="section-10">2.4 证据等级</h3>
+<p>所有讲义和研究报告应区分：已验证的实现事实、论文在其设置下报告的结果、工程经验、类比、待检验假设。模型卡中的分数、演示和内部传闻不能自动升级为跨场景结论。</p>
+<p>人脑、组织和教学类比必须分别说明功能层、算法层和实现层的对应关系。语言表现、任务能力与解释忠实性应单独评价。<a href="https://arxiv.org/abs/2301.06627">语言与思维的区分</a>，<a href="https://arxiv.org/abs/2307.13702">推理文本的忠实性研究</a></p>
+<h2 id="section-11">3. 培养目标与达标证据</h2>
+<h3 id="section-12">3.1 总体学习成果</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>学习成果</th>
+<th>核心达标证据</th>
+<th>主要模块</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>O1</td>
+<td>从模糊需求建立任务、环境和验收标准</td>
+<td>任务分布说明、成功与失败定义、至少一个确定性或简单模型基线</td>
+<td>M6、M8、M9</td>
+</tr>
+<tr>
+<td>O2</td>
+<td>解释并重建模型的关键计算与学习机制</td>
+<td>小模型实现、关键推导、梯度或数值核对、受控架构实验</td>
+<td>M1、M2</td>
+</tr>
+<tr>
+<td>O3</td>
+<td>根据任务和预算选择模型及计算分配策略</td>
+<td>模型与配置对照、路由依据、任务质量与总成本报告</td>
+<td>M3、M4、M7、M8</td>
+</tr>
+<tr>
+<td>O4</td>
+<td>构建可恢复、可观察且有执行边界的 harness</td>
+<td>工具契约、状态模型、日志、故障恢复与越权阻断实验</td>
+<td>M5、M6、M8</td>
+</tr>
+<tr>
+<td>O5</td>
+<td>为推理系统建立容量与性能模型</td>
+<td>内存和传输估算、负载描述、测量曲线、瓶颈定位及预测核对</td>
+<td>M1、M4</td>
+</tr>
+<tr>
+<td>O6</td>
+<td>将业务知识与任务经验转化为训练和改进资产</td>
+<td>来源可追溯的数据、验证过的轨迹、留出评价、能力与退化分析</td>
+<td>M2、M5、M8</td>
+</tr>
+<tr>
+<td>O7</td>
+<td>设计并评价多 Agent 分工与协作</td>
+<td>单 Agent 与协作基线、依赖图、通信开销、相关错误分析</td>
+<td>M3、M6、M7</td>
+</tr>
+<tr>
+<td>O8</td>
+<td>作出可信的经验研究结论</td>
+<td>预先定义的比较、版本与预算记录、不确定性、消融和反例</td>
+<td>M8 及全部模块</td>
+</tr>
+<tr>
+<td>O9</td>
+<td>设计人的介入与知识演化过程</td>
+<td>人工投入、升级与交接机制、知识更新来源、真实任务的后续表现</td>
+<td>M5、M8、M9</td>
+</tr>
+<tr>
+<td>O10</td>
+<td>形成可校准的技术直觉并向他人迁移知识</td>
+<td>实验前预测、事后归因、陌生条件测试、个人答辩与教学材料</td>
+<td>全部模块</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-13">3.2 深度等级</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>等级</th>
+<th>能力表现</th>
+<th>典型证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0：辨认</td>
+<td>能辨认对象和术语，指出未知部分</td>
+<td>概念图与问题清单</td>
+</tr>
+<tr>
+<td>L1：使用</td>
+<td>能按文档运行、改变配置并描述结果</td>
+<td>可重复的使用记录</td>
+</tr>
+<tr>
+<td>L2：重建</td>
+<td>能解释机制、实现缩小版本、预测局部变化</td>
+<td>推导、最小实现、预测与测量</td>
+</tr>
+<tr>
+<td>L3：研究式掌握</td>
+<td>能独立比较方案、诊断失败并检验迁移</td>
+<td>对照与消融、原始数据、边界分析</td>
+</tr>
+<tr>
+<td>L4：研究贡献</td>
+<td>能提出并检验新的机制、方法或适用边界</td>
+<td>有贡献的问题定义、可靠研究结果及可复现材料</td>
+</tr>
+</tbody>
+</table></div>
+<p>L4 可以体现为有价值的阴性结果、反例或评价方法，不以刷新榜单或论文录用为必要条件。</p>
+<p>课程负责人路线：九个模块均以 L3 为目标，通过跨层项目检验整体能力，并逐步形成 L4 研究成果。学生版本的建议起点：共同基础达到 L2，硕士在至少两个模块达到 L3；博士在此基础上完成一个 L4 研究问题。正式教学标准须由试教工作量和培养方案进一步定标。</p>
+<h3 id="section-14">3.3 评价维度</h3>
+<p>每个实践成果分别评价六个维度：机制理解、实现与可复现性、实验有效性、资源判断、迁移与局限、个人理解与沟通。使用上述 L0—L4 描述，保留维度分布，不用一个平均分隐藏关键短板。</p>
+<p>共享验收要求：结论与证据一致；他人能按说明复现主要结果；保留失败运行；区分观察与推测；能解释关键实现。依赖泄漏评测、无法核对的结果或未说明的人工补救，不构成对应能力的达标证据。</p>
+<h2 id="section-15">4. 先修知识与学习依赖</h2>
+<h3 id="section-16">4.1 基础能力</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>基础</th>
+<th>需要掌握的内容</th>
+<th>诊断任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数学与概率</td>
+<td>向量矩阵、链式求导、条件概率、对数似然、熵、期望、方差、抽样与置信区间</td>
+<td>推导 softmax 交叉熵梯度；解释一个小样本胜率的含义</td>
+</tr>
+<tr>
+<td>深度学习</td>
+<td>自动微分、优化器、初始化、归一化、过拟合、数值精度、训练与验证分离</td>
+<td>检查一个训练损失下降而留出表现变差的案例</td>
+</tr>
+<tr>
+<td>软件与系统</td>
+<td>Python/PyTorch、版本控制、Linux、进程与异步、API、测试、日志、内存层次</td>
+<td>实现可取消、会超时、能记录状态的工具调用</td>
+</tr>
+<tr>
+<td>决策与实验</td>
+<td>状态、行动、反馈、奖励、基线、混杂因素、重复试验</td>
+<td>将一个业务要求改写为可评价的任务</td>
+</tr>
+</tbody>
+</table></div>
+<p>入门诊断用于补齐先修，不把熟悉 PyTorch 自动等同于熟悉语言建模、强化学习或分布式系统。</p>
+<h3 id="section-17">4.2 依赖关系</h3>
+<pre><code class="language-text">数学、PyTorch ──→ M1 模型机制 ──→ M2 数据与能力塑造
+                     │                │
+系统基础 ──────────→ M4 推理系统       ├──→ M3 推理、规划、验证
+                     │                │
+软件与任务建模 ──→ M6 最小 harness ←── M5 上下文与记忆
+                     │
+                     └──→ M7 多 Agent 协作
+
+M8 评测与研究方法：从第一个实验开始，贯穿全部模块
+M9 人、组织与学习：贯穿任务定义、交接、知识更新和教学
+</code></pre>
+<p>这些是深入理解的依赖，不要求先学完一侧再接触另一侧。初次可用现成模型观察全流程，再向下重建计算和训练机制，最后回到完整系统解释现象。</p>
+<h2 id="section-18">5. 九个知识模块的能力标准</h2>
+<h3 id="section-19">M1. 语言模型的能力从哪里来</h3>
+<p><strong>必须能解释：</strong> 分词与编码、条件概率分解、embedding、因果注意力、位置表示、残差与归一化、前馈网络、训练目标与生成。区分 encoder、decoder 和 encoder-decoder；理解 Dense、MoE、MHA/MQA/GQA、潜在状态和混合架构的设计空间。区分总参数、激活参数、计算量与驻留内存。</p>
+<p><strong>必须亲手复现：</strong> 用 PyTorch 构建可训练的小型自回归语言模型；明确训练所用目标、掩码与张量形状；核对一段前向计算或梯度；实现有缓存和无缓存的生成并检查数值误差。至少做一项架构改变，在明确的训练或推理预算下比较。</p>
+<p><strong>必须实际测量：</strong> 训练与留出损失、任务表现、参数量、内存、生成速度；在改变长度、数据或架构时记录预测与实测偏差。跨 tokenizer 比较时，说明 token 口径差异，不能直接用不同 token 定义下的 perplexity 排名。</p>
+<p><strong>可以继续研究：</strong> 表示、归纳偏置、模块化、稀疏路由、长程依赖和状态压缩如何共同影响任务能力。多模态与具身方向扩展输入表示和行动空间，沿用相同的机制与评价要求。</p>
+<p><strong>达标证据：</strong> 可运行模型、关键推导、至少一个受控改变及反例、从模型配置到资源估算的说明。原始入口：<a href="https://arxiv.org/abs/1706.03762">Transformer</a>、<a href="https://arxiv.org/abs/2101.03961">Switch Transformer</a>、<a href="https://arxiv.org/abs/2305.13245">GQA</a>。</p>
+<h3 id="section-20">M2. 数据与能力塑造</h3>
+<p><strong>必须能解释：</strong> 预训练、继续预训练、SFT、参数高效微调、蒸馏、偏好学习、强化学习、可验证奖励；策略、奖励、信用分配和分布偏移。理解数据清洗、去重、混合、来源、难度、多样性与污染；区分教师输出模仿、可获得 logits 时的分布蒸馏，以及学生自身轨迹上的纠正。</p>
+<p><strong>必须亲手复现：</strong> 完成小模型预训练；建立任务资产到合成数据的流程；在一个真实工具接口或可执行模拟环境中生成并验证轨迹；完成一次 SFT/蒸馏实验，再选做一种偏好或奖励驱动更新。保留基础模型、检索或提示改进的对照。训练中正确处理工具观察、模型输出和 loss mask。</p>
+<p><strong>必须实际测量：</strong> 数据通过率、去重与来源覆盖、教师和验证开销、学习曲线、留出任务表现、通用能力退化、校准变化；报告训练和推理的总投入。失败或不充分的轨迹不能仅凭语言流畅度进入“正确示范”。</p>
+<p><strong>可以继续研究：</strong> 合成任务的覆盖与真实分布错配；教师错误传播；学生自己遇到的状态与教师轨迹之间的差异；训练数据、工具协议和 harness 的共同适配；主动索取 human knowledge delta 的策略。</p>
+<p><strong>达标证据：</strong> 可追溯数据、生成与验证代码、训练配置、独立评测、退化分析。原始入口：<a href="https://arxiv.org/abs/2203.15556">Chinchilla</a>、<a href="https://arxiv.org/abs/2212.10560">Self-Instruct</a>、<a href="https://arxiv.org/abs/2305.18290">DPO</a>、<a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a>、<a href="https://swesmith.com/">SWE-smith</a>。</p>
+<h3 id="section-21">M3. 推理、规划与验证</h3>
+<p><strong>必须能解释：</strong> 推理时计算、串行展开、并行采样、候选选择、搜索、规划、重新规划、工具反馈、过程验证和结果验证。区分单次推理质量、搜索覆盖、选择器质量和最终任务完成率。</p>
+<p><strong>必须亲手复现：</strong> 为同一批可验证任务比较直接生成、分步求解、多候选与验证、带环境反馈的工具循环。选择一个必须根据中间观察改变计划的任务，记录状态和决策。</p>
+<p><strong>必须实际测量：</strong> 成功率、额外采样收益、选择器误判、工具与生成成本、总时长、错误恢复；分别在相同预算和相同质量要求下比较。不能把拥有正确答案 oracle 的 pass@k 当成可部署选择策略的成功率。</p>
+<p><strong>可以继续研究：</strong> 自适应分配计算、验证器与生成器的相关错误、可见推理解释的忠实性、不可完全观察环境下的计划与停止条件。</p>
+<p><strong>达标证据：</strong> 受控任务集、完整轨迹、验证器独立性说明、预算对照与失败类型。入口：<a href="https://arxiv.org/abs/2210.03629">ReAct</a>、<a href="https://arxiv.org/abs/2307.13702">推理忠实性</a>。</p>
+<h3 id="section-22">M4. 推理服务、硬件与量化</h3>
+<p><strong>必须能解释：</strong> prefill/decode、连续批处理、分块 prefill、前缀复用、KV 分配、推测解码、PD 分离；数据、张量、流水线与专家并行；算力、带宽、排队、通信和负载分布。理解 vLLM、SGLang 的模型执行、调度、缓存和扩展接口，而非只记启动参数。</p>
+<p>硬件部分覆盖 GPU 芯片内 SRAM、HBM/GDDR 显存、DDR 主存、SSD 与 NVMe 接口，以及 PCIe、GPU 间互连与跨机网络。具体容量、带宽、精度与内核支持以实验硬件和版本为准。</p>
+<p>参数至少分三组：采样行为参数；引擎执行与调度参数；模型、精度与部署参数。输出长度、上下文长度和推理预算可能同时影响多项质量与性能指标。</p>
+<p>量化部分覆盖训练后量化与量化感知训练，权重、激活、KV 的分别量化，校准、异常值、分组、缩放与混合精度。区分压缩后的存储体积、实际工作内存、内核支持及端到端加速。</p>
+<p><strong>必须亲手复现：</strong> 在单机运行一个开源推理引擎并读通一条请求路径；构造长度、到达率与并发受控的负载；实施一种缓存或调度干预和一种量化实验；至少运行一次可核对的跨进程并行或传输实验。多机条件可后续扩展，模拟通信不能被报告为真实集群收益。</p>
+<p><strong>必须实际测量：</strong> TTFT、逐 token 间隔或 TPOT、端到端时长、p50/p95/p99、吞吐、满足质量与时限的有效吞吐、显存、主存、缓存命中率、传输量、任务质量。区分冷启动、冷缓存和暖缓存，说明测量是否含排队及工具等待。</p>
+<p>对于各层 KV 配置相同的普通全注意力 MHA/GQA，初步 KV 容量估算为：</p>
+<pre><code class="language-text">KV_bytes ≈ 2 × 层数 × 各请求缓存 token 数之和 × KV头数 × 头维度 × 每元素字节数
+运行内存 ≈ 实际驻留权重 + KV或其他推理状态 + 临时激活与工作区 + 框架开销
+</code></pre>
+<p>该 KV 公式不直接适用于所有 MLA、滑动窗口、混合或循环状态架构；也未包含分页浪费、元数据与并行复制等。学习者必须按实际模型修正估算，并核对测量。</p>
+<p><strong>可以继续研究：</strong> 量化校准与 Agent 工作负载适配、缓存迁移和重计算的盈亏条件、PD 分离的部署条件、混合架构的状态管理、服务端调度与上层任务规划的共同优化。</p>
+<p><strong>达标证据：</strong> 容量模型、负载生成器、配置矩阵、性能曲线、质量对照、预测偏差分析。技术入口：<a href="https://arxiv.org/abs/2205.14135">FlashAttention</a>、<a href="https://arxiv.org/abs/2309.06180">PagedAttention</a>、<a href="https://arxiv.org/abs/2306.00978">AWQ</a>。实现入口：<a href="https://docs.vllm.ai/en/latest/features/disagg_prefill/">vLLM PD 分离</a>、<a href="https://docs.sglang.io/docs/advanced_features/hicache_design">SGLang HiCache</a>。</p>
+<h3 id="section-23">M5. 上下文、知识与记忆</h3>
+<p><strong>必须能解释：</strong> 上下文构建、指令与证据来源、工具结果筛选、检索、重排、摘要、压缩、持久记忆、时效和冲突处理。区分会话记录、当前上下文、外部知识、任务状态与模型推理缓存。</p>
+<p><strong>必须亲手复现：</strong> 构建一个可追溯的上下文准备流程；比较完整历史、截断、普通摘要、结构化 handoff 和目标相关压缩；实现跨会话恢复与记忆更正。记录哪些信息是保留、重新检索、重新计算或已经丢失。</p>
+<p><strong>必须实际测量：</strong> 下游任务表现、关键状态保留、来源正确性、上下文占用、压缩与检索开销、跨多次压缩的退化、目标变化后的恢复能力。</p>
+<p><strong>可以继续研究：</strong> 预算约束下的信息选择、目标变化时的记忆策略、压缩与检索的协同、语义压缩与 KV 近似的交互、从使用反馈维护知识。</p>
+<p><strong>达标证据：</strong> 上下文与状态模式、可重放任务、压缩对照、信息丢失案例和成本分析。入口：<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Context engineering</a>。旗舰实验见第 8 节。</p>
+<h3 id="section-24">M6. 单 Agent、工具与 harness</h3>
+<p><strong>必须能解释：</strong> 工具契约、状态转换、事件、观察与行动、超时、取消、重试、幂等、检查点、恢复、任务完成判定、权限与隔离。理解哪些边界由程序和环境执行，哪些只是模型可见的指令。</p>
+<p><strong>必须亲手复现：</strong> 实现一个最小工具循环；为一个成熟 harness 编写业务适配；读通其任务到工具结果再到下一次模型调用的路径；注入进程中断、工具超时、重复调用、部分完成与状态过期等故障。</p>
+<p><strong>必须实际测量：</strong> 完成率、恢复成功率、重复副作用、错误完成声明、人工介入、总时间和资源开销；核对外部结果，而非只读 Agent 的自述。</p>
+<p><strong>可以继续研究：</strong> 运行状态与自然语言计划的一致性、长任务恢复、完成条件的组合、不同模型与运行时协议适配、环境设计如何改变模型能力表现。</p>
+<p><strong>达标证据：</strong> 架构与接口说明、状态与事件记录、故障实验、可验证的完成条件。现成运行时入口：<a href="https://learn.chatgpt.com/docs/app-server">Codex App Server</a>。长期任务案例：<a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">Effective harnesses</a>。</p>
+<h3 id="section-25">M7. 多 Agent 与组织设计</h3>
+<p><strong>必须能解释：</strong> 任务分解、依赖、关键路径、协调方式、角色与工具权限、共享和独立上下文、通信、结果合并、冲突与相关错误。多个角色名不自动产生独立知识或互补能力。</p>
+<p><strong>必须亲手复现：</strong> 比较单 Agent、固定流程和至少一种多 Agent 结构；在可分解任务与强顺序依赖任务上分别测试；固定工具与评价条件，另设预算匹配对照。</p>
+<p><strong>必须实际测量：</strong> 质量、总计算量、关键路径时间、通信与协调开销、重复工作、合并错误、验证者漏检、人工调度成本。</p>
+<p><strong>可以继续研究：</strong> 按任务难度路由模型、异构模型分工、动态委派、团队记忆、证据独立性、架构与任务结构匹配。</p>
+<p><strong>达标证据：</strong> 依赖与通信图、单 Agent 基线、至少一种收益不足或失败条件，以及有依据的模型分配策略。受控比较入口：<a href="https://arxiv.org/abs/2512.08296">Towards a Science of Scaling Agent Systems</a>。</p>
+<h3 id="section-26">M8. 评测、安全、可靠性与研究方法</h3>
+<p><strong>必须能解释：</strong> 任务分布、构念与代理指标、留出和时间划分、污染、重复试验、相关样本、置信区间、多次择优、评价者偏差、版本漂移。理解提示注入、工具越权、状态泄漏、反馈或奖励被利用的失败机制。</p>
+<p><strong>必须亲手复现：</strong> 构建可重放评测环境；组合程序判定、环境状态核对与经校准的人评/模型评；注入受控故障和不可信输入；把一项宣称的提升拆解为可检验的因果干预。</p>
+<p><strong>必须实际测量：</strong> 任务质量及分层错误、评测者一致性、重复运行波动、成本、人工投入、恢复与边界行为。结果解释应明确样本与任务覆盖范围，观测到零次错误不等于普遍安全。</p>
+<p><strong>可以继续研究：</strong> 长程 Agent 评价、隐藏失败、评测器稳健性、知识演化中的自证循环、模型与 harness 更新的回归检测。</p>
+<p><strong>达标证据：</strong> 评测说明、隔离的开发与审计资产、原始运行记录、统计与成本报告、未解决问题。入口：<a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents">Agent evals</a>、<a href="https://arxiv.org/abs/2306.05685">LLM-as-a-judge 偏差</a>。</p>
+<h3 id="section-27">M9. 人、认知、组织与学习</h3>
+<p><strong>必须能解释：</strong> 语言表现与任务能力、解释与证据、认知卸载、元认知、信任校准、专业直觉、分工责任、交接、反馈、教学支架与迁移。神经科学部分学习证据和研究方法，明确类比不自动构成同机制结论。</p>
+<p><strong>必须亲手复现：</strong> 设计人机分工或知识演化实验；记录真实的人工补充和纠错；开展一次面向同伴的教学，并通过陌生问题或延后任务检验理解迁移。</p>
+<p><strong>必须实际测量：</strong> 人工时间、介入时机、错误升级、知识更新正确性、任务结果、学习者独立解释与迁移能力。参与者研究按机构实际要求实施，避免把同一人的重复任务误当独立样本。</p>
+<p><strong>可以继续研究：</strong> AI 辅助下的技能形成、组织记忆、错误共识、主动学习与人类知识增量、不同反馈形式的效果。</p>
+<p><strong>达标证据：</strong> 人机协议、人工投入记录、预测与反思日志、个人答辩、可验证的教学效果。直觉研究入口：<a href="https://pubmed.ncbi.nlm.nih.gov/19739881/">Conditions for intuitive expertise</a>。知识组织入口：<a href="https://library.serviceinnovation.org/KCS/KCS_v6/KCS_v6_Practices_Guide/030/025">KCS Double Loop</a>。</p>
+<h2 id="section-28">6. 技术历史的学习标准</h2>
+<p>历史以问题主线组织。各分支可能并存，表中顺序不意味着后来方法全面替代此前方法。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>主线</th>
+<th>应覆盖的重要节点</th>
+<th>必须保留的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>表示与序列计算</td>
+<td>统计语言模型、分布式表示、循环网络、seq2seq/attention、Transformer、Dense/MoE、混合与状态架构</td>
+<td>计算依赖、表示能力与归纳偏置如何改变？</td>
+</tr>
+<tr>
+<td>训练与数据</td>
+<td>自监督预训练、迁移、规模与数据配比、指令训练、偏好学习、蒸馏、可验证奖励</td>
+<td>模型、数据和计算之间怎样分配资源？</td>
+</tr>
+<tr>
+<td>推理与行动</td>
+<td>分步推理、多候选、工具使用、搜索、验证、长程任务与经验复用</td>
+<td>收益来自能力、信息、搜索还是选择器？</td>
+</tr>
+<tr>
+<td>高效计算</td>
+<td>KV 复用、注意力内核、MHA/MQA/GQA 等状态结构、分页、连续批处理、前缀缓存、PD 分离、分层缓存</td>
+<td>主要减少计算、数据搬运、内存浪费还是排队干扰？</td>
+</tr>
+<tr>
+<td>压缩与适配</td>
+<td>权重量化、激活与 KV 量化、裁剪、语义压缩、检索、参数高效适配</td>
+<td>哪些信息、数值精度或能力被改变？</td>
+</tr>
+<tr>
+<td>协作与演化</td>
+<td>工作流、单 Agent、多 Agent、知识演化、代码/策略自改进、模型自适配</td>
+<td>改变的是哪个对象，改进怎样被独立检验？</td>
+</tr>
+</tbody>
+</table></div>
+<p>每个入选节点制作一张学习卡：原始问题、机制与关键推导、原始证据、最小复现、与简单基线的比较、失败条件、当代适用范围、迁移实验。FlashAttention 的精确注意力计算与 IO 优化、PagedAttention 的缓存内存管理，适合作为“名字相近但解决不同问题”的首组练习。</p>
+<p>前沿节点每轮更新文献和版本。已学节点保留实现与实验记录；复习重点放在解释新技术与旧机制的关系。</p>
+<h2 id="section-29">7. 实验与达标证据索引</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>实验</th>
+<th>内容</th>
+<th>对应目标</th>
+<th>主要交付</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E01</td>
+<td>从一次工具任务追踪到一次 token 生成</td>
+<td>O1、O2、O4</td>
+<td>调用、状态与计算路径图</td>
+</tr>
+<tr>
+<td>E02</td>
+<td>从零训练小语言模型与架构干预</td>
+<td>O2、O8</td>
+<td>模型、推导、学习曲线与反例</td>
+</tr>
+<tr>
+<td>E03</td>
+<td>任务、合成数据与模型适配</td>
+<td>O2、O6、O8</td>
+<td>数据来源、验证轨迹、训练与留出结果</td>
+</tr>
+<tr>
+<td>E04</td>
+<td>推理计算与验证器的预算比较</td>
+<td>O3、O8</td>
+<td>采样、验证与最终成功率分析</td>
+</tr>
+<tr>
+<td>E05</td>
+<td>推理引擎容量、缓存与调度</td>
+<td>O3、O5</td>
+<td>资源估算、负载、配置矩阵与曲线</td>
+</tr>
+<tr>
+<td>E06</td>
+<td>量化与任务质量</td>
+<td>O3、O5、O6</td>
+<td>精度、校准、内核与质量对照</td>
+</tr>
+<tr>
+<td>E07</td>
+<td>多轮上下文压缩与恢复</td>
+<td>O4、O5、O8</td>
+<td>第 8 节方案及完整实验材料</td>
+</tr>
+<tr>
+<td>E08</td>
+<td>Harness 中断恢复与执行边界</td>
+<td>O4、O8</td>
+<td>故障注入、外部结果与恢复记录</td>
+</tr>
+<tr>
+<td>E09</td>
+<td>模型分配与多 Agent 协作</td>
+<td>O3、O7、O8</td>
+<td>单 Agent 对照、通信和成本归因</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>KCS 双循环知识演化</td>
+<td>O6、O8、O9</td>
+<td>第 9 节方案及真实留出任务评价</td>
+</tr>
+<tr>
+<td>E11</td>
+<td>技术直觉与教学迁移</td>
+<td>O9、O10</td>
+<td>预测日志、个人答辩、迁移任务</td>
+</tr>
+<tr>
+<td>E12</td>
+<td>跨层研究项目</td>
+<td>至少覆盖五项 O 目标</td>
+<td>完整系统、可检验问题、研究报告</td>
+</tr>
+</tbody>
+</table></div>
+<p>这些实验可共享环境和实现，但每项须保留独立问题与达标证据。不能用同一张总体分数表替代所有能力评价。</p>
+<h2 id="section-30">8. 旗舰实验 A：多轮任务的上下文压缩与恢复</h2>
+<h3 id="section-31">8.1 研究问题</h3>
+<p>在给定 token、计算与延迟预算下，设计目标相关的服务端压缩策略，检验它能否保持接近结构化 handoff 的下游任务表现，并明确相对完整历史的损失、成本和适用边界。</p>
+<p>这里的“有效”是对指定任务分布、预算、指标和不确定性的经验结论。对通用开放任务，不宣称已经证明任意信息压缩无损；对受限状态字段，可以另外证明模式或状态不变量。</p>
+<h3 id="section-32">8.2 系统接口与不变量</h3>
+<p>设计一个由课程自行实现的压缩服务，输入包括目标、对话或事件、工具结果、结构化状态和预算；输出包括保留状态、摘要、证据引用、未解决事项和必要的检索指针。该服务是公开可检验的设计，不复刻或声称揭示供应商的私有压缩项。</p>
+<p>需要单独保存并验证的字段包括：当前目标及其版本、有效约束、已执行动作及回执、关键事实与来源、精确标识符、已知失败、未完成项和可恢复工件。摘要不应覆盖可验证的事实记录。</p>
+<h3 id="section-33">8.3 基线与控制</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>条件</th>
+<th>方法</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A0</td>
+<td>完整历史</td>
+<td>在能装入窗口的共同子集上提供参照；超窗任务标明不可用</td>
+</tr>
+<tr>
+<td>A1</td>
+<td>保留最近消息的简单截断</td>
+<td>建立低成本基线</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>普通会话摘要</td>
+<td>检验无专门状态结构的摘要</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>结构化 handoff 文档</td>
+<td>对应可阅读、可交接的基线</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>目标与预算感知的压缩</td>
+<td>检验所提出策略</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>压缩加可追溯检索</td>
+<td>检验外部存储的作用，计入检索成本</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>可用时的供应商 compaction</td>
+<td>作为兼容模型上的黑箱参照，单独报告限制</td>
+</tr>
+</tbody>
+</table></div>
+<p>先固定下游模型、工具、任务、压缩预算和压缩时点，比较算法。再把同一算法分别部署在客户端管理层和服务端，比较序列化、网络、延迟与运行效果。位置变化与算法变化分开检验。</p>
+<p>如果引入 KV 量化或裁剪，另设“语义压缩开/关 × KV 近似开/关”的实验，避免把两种干预的收益混在一起。普通上下文改写后，应按新的输入重建或正确复用兼容缓存；删除文本不等于可以任意删除或保留原 KV，后者可能包含此前输入的影响。</p>
+<h3 id="section-34">8.4 任务与指标</h3>
+<p>任务至少覆盖：长程依赖、精确编号、目标中途变化、旧事实被更正、工具失败、部分完成、需追溯证据的结论、多次压缩和重新启动。任务生成器、开发题与隐藏审计题分离。</p>
+<p>报告任务成功率、关键状态正确保留率、来源正确性、错误行动、重复工作、恢复时间、输入输出 token、压缩和检索开销、TTFT 与端到端时长。结果按压缩轮数、压缩比例和任务类型分层。</p>
+<p>“接近 handoff”采用预先确定的非劣效或等效问题表达。若采用非劣效，定义允许的质量下降 δ；对配对差值 Q(A4)−Q(A3) 计算任务层面的区间，只有下界高于 −δ 时，才支持相应结论。δ 由任务容忍度在正式评测前确定；未检出显著差异不能直接作为等效证据。</p>
+<p>样本量由预实验方差、δ 和所需把握度估算。少量任务与多次重复可以用于调试，不足以自动支持总体非劣效结论。相同任务的多个轮次或试次存在相关性，不能伪装成大量独立样本。</p>
+<h3 id="section-35">8.5 达标与研究贡献</h3>
+<p>最低交付为接口实现、基线、任务资产、状态模式、成本账、原始轨迹、配对分析和失败报告。结论可以是策略有效，也可以是某类目标变化使其失效。不能仅用更短的上下文或更低的摘要损失宣称任务能力被保留。</p>
+<h2 id="section-36">9. 旗舰实验 B：KCS 双循环与人类参与的知识演化</h2>
+<h3 id="section-37">9.1 案例定位</h3>
+<p>案例依据课程负责人本次提供的三步描述：值班 Agent 遇到未知问题后由人类接手；每日知识演化 Agent 提炼经验并请求 human knowledge delta；再构造可能出现的问题，检验改进后的知识库。</p>
+<p>该设计在机制上合理，可作为“人类参与的知识演化闭环”研究。KCS 的 Solve Loop 面向具体请求中的知识使用与维护，Evolve Loop 面向多次事件和知识使用模式的改进。课程将三步流程映射到这两个层次，并额外规定独立评价方法。<a href="https://library.serviceinnovation.org/KCS/KCS_v6/KCS_v6_Practices_Guide/030/025">KCS Double Loop</a></p>
+<p>本文不据此认定基础模型权重已经变化，也不认定已经展示持续的递归能力增长。若以后系统会修改自身的知识演化策略或训练方法，可再扩大实验对象。</p>
+<h3 id="section-38">9.2 工作流程与资产</h3>
+<pre><code class="language-text">真实请求 → 值班 Agent → 回答/行动，或升级给人
+                         │
+                         ↓
+          证据、处置结果、人工纠正与 knowledge delta
+                         │
+                         ↓
+          知识演化 Agent → 候选知识版本与开发测试
+                         │
+                         ↓
+          来源核对、回归检查、独立审计 → 新知识版本
+                         │
+                         └────────→ 后续真实请求
+</code></pre>
+<p>事件至少记录任务、时间、业务类别、知识库版本、模型与 harness 版本、检索与证据、Agent 处置、人工增量、最终结果和人工耗时。知识条目记录来源、适用条件、版本、有效时间、冲突、更正与失效关系。</p>
+<p>“未知问题”也需要标准：缺少事实、检索失败、证据冲突、权限不足和能力不足应分别记录。模型自述信心只能作为信号之一，需校准升级策略。</p>
+<h3 id="section-39">9.3 开发题与审计题分离</h3>
+<p>自构造问题用于发现覆盖缺口、检查一致性和建立回归测试。最终效果另外使用预先留出的真实问题、适当按业务流程或来源划分的任务，以及未来时段的真实请求。</p>
+<p>生成器和改库过程不能读取隐藏审计答案；更换一个模型当裁判并不自动使题目独立。审计结果若被反复用于调参，应重新界定为开发反馈，并建立新的独立评价。</p>
+<p>知识更新中，对事实的增加需要可追溯的外部证据或明确记录的人类确认；合成题的假设不能自动变成新的业务事实。对于未知、冲突和应当拒答或升级的场景，也应构造测试。</p>
+<h3 id="section-40">9.4 对照与指标</h3>
+<p>建议比较：固定知识库；仅纳入人工确认增量；知识演化但不加入合成开发题；完整三步流程。尽可能在相同事件流、模型、检索与预算下回放，并将未来真实流量结果单独报告。</p>
+<p>主要指标为未来真实问题解决率、正确升级率、错误回答与不必要升级、人工分钟数、证据支持率、过期或冲突知识错误、回归失败和计算成本。文章数量与合成题通过率可作过程指标，不能独自代表组织能力提升。</p>
+<p>版本采用候选、验证、启用与撤回状态。课程环境保存旧版本和结果回执；知识更新不应让已解决问题丢失必要依据。</p>
+<h3 id="section-41">9.5 向训练与 RSI 方向延伸</h3>
+<p>第一阶段固定模型权重，确认知识和流程改进是否有效。第二阶段从经过验证的事件构造学生模型的工具轨迹或偏好数据，保留知识库改进与模型更新的独立对照。第三阶段可让系统提出改进任务生成、检索、验证或更新策略的候选，并用独立任务评价后续改进效率。</p>
+<p>研究报告明确每轮改变的对象、人工贡献、搜索与训练预算、收益和退化。知识资产扩充、任务熟悉度增加、模型能力改变和改进方法改变分别报告。</p>
+<h2 id="section-42">10. 统一实验与研究规范</h2>
+<h3 id="section-43">10.1 比较对象与预算</h3>
+<p>一次运行的身份至少包括模型与 tokenizer 版本、权重或适配器、精度、harness、提示、工具、知识库、任务、推理引擎、硬件和时间。服务商不公开某项信息时记录“不可观测”，不能填入推测值。</p>
+<p>模型选择评价至少包含任务质量、完成时间、失败与重试、工具调用、人工介入和总体成本。跨模型的 token 数不必然等价于相同计算预算；同时记录可获得的成本、设备时间和墙钟时间。</p>
+<h3 id="section-44">10.2 主要指标口径</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>约定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务成功率</td>
+<td>满足预定义完成与质量标准的任务数 / 被评价任务数；说明重试政策</td>
+</tr>
+<tr>
+<td>每个成功任务的成本</td>
+<td>比较期间全部相关成本 / 成功任务数，包含失败与补救；零成功时单独报告</td>
+</tr>
+<tr>
+<td>人工投入</td>
+<td>分别记录配置、标注、知识补充、审核、运行补救和后续维护</td>
+</tr>
+<tr>
+<td>完成时间</td>
+<td>从规定的请求起点到可验收结果；说明排队、重试和人工等待是否计入</td>
+</tr>
+<tr>
+<td>有效吞吐</td>
+<td>单位时间内同时满足质量与时限要求的任务量；与纯 token 吞吐分别报告</td>
+</tr>
+<tr>
+<td>稳定性</td>
+<td>多次运行的分布与置信区间，明确任务相关性和随机性</td>
+</tr>
+<tr>
+<td>恢复能力</td>
+<td>在预定义故障后完成或正确终止、升级的比例及代价</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-45">10.3 研究可信度</h3>
+<p>在正式比较前固定主要假设、任务划分、主要指标、预算、停止条件和允许的差异范围。保留调参记录，避免从许多候选中挑选最好结果后使用未经修正的置信结论。</p>
+<p>统计分析以独立任务或适当聚类单位为基础，优先利用相同任务上的配对比较。多轮对话、同一来源的近重复问题和同一用户的重复任务，需要处理其相关性。除总体指标外，按任务难度、输入长度、来源和失败类型报告。</p>
+<p>程序验证优先核对环境的真实结果。模型评审需要与人评或已知答案校准，并检查顺序、风格、冗长和自偏好等影响。评价者也属于需要验证的系统组件。</p>
+<h3 id="section-46">10.4 技术直觉与个人学习</h3>
+<p>每次关键实验前记录预测、理由、预期数量级和信心；实验后记录偏差、竞争性解释及下一项区分性实验；改变一个条件后再检验迁移。直觉的成长用预测与诊断质量观察，不用阅读数量或主观自信替代。</p>
+<p>允许使用 AI 协作学习与实现，交付时说明协作范围。个人应能解释关键设计，在陌生扰动下诊断问题，并对 AI 产生的推导、代码和引用进行核验。</p>
+<h2 id="section-47">11. 综合项目与方向专精</h2>
+<h3 id="section-48">11.1 综合项目要求</h3>
+<p>E12 应连接至少五项学习成果，包含一个明确的跨层干预，例如数据与工具协议共同适配、压缩与推理服务共同设计，或知识演化与人机升级策略共同改进。项目需至少保留一个简单基线，并使用一个不同任务族或不同环境检验迁移。</p>
+<p>最低交付包含任务与环境说明、系统与状态图、模型和底座选型、可复现实现、数据与版本记录、独立评价、资源账、故障与边界分析，以及个人答辩。论文式创新是博士研究路径的额外目标，不以复杂系统规模替代。</p>
+<h3 id="section-49">11.2 专精方向</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>方向</th>
+<th>可深入的研究对象</th>
+<th>与共同基础的连接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型与训练</td>
+<td>架构、合成轨迹、蒸馏、奖励、持续适配</td>
+<td>M1、M2、M3、M8</td>
+</tr>
+<tr>
+<td>推理系统</td>
+<td>内核、量化、调度、状态与数据搬运、分布式部署</td>
+<td>M1、M4、M5、M8</td>
+</tr>
+<tr>
+<td>Agent 与协作</td>
+<td>长程状态、规划、验证、分工、模型与 harness 适配</td>
+<td>M3、M5、M6、M7</td>
+</tr>
+<tr>
+<td>知识与组织</td>
+<td>KCS、知识质量、更新策略、人工升级与责任</td>
+<td>M5、M6、M8、M9</td>
+</tr>
+<tr>
+<td>人机交互与教育</td>
+<td>信任校准、认知卸载、独立学习与迁移</td>
+<td>M3、M8、M9</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="section-50">12. 课程负责人的推进关卡与资源原则</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>关卡</th>
+<th>可验收成果</th>
+<th>后续作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S0：共同语言与诊断</td>
+<td>任务、系统边界、基础诊断与初始评测</td>
+<td>暴露先修缺口</td>
+</tr>
+<tr>
+<td>S1：模型与运行机制</td>
+<td>小模型、生成路径、容量估算与最小 harness</td>
+<td>建立端到端解释基础</td>
+</tr>
+<tr>
+<td>S2：能力与系统干预</td>
+<td>合成轨迹训练、推理预算、缓存与量化实验</td>
+<td>获得跨层诊断经验</td>
+</tr>
+<tr>
+<td>S3：长期工作与协作</td>
+<td>压缩恢复、故障、多 Agent 和 KCS 对照</td>
+<td>检验复杂状态与组织问题</td>
+</tr>
+<tr>
+<td>S4：研究与迁移</td>
+<td>独立研究问题、未知条件与完整报告</td>
+<td>建立专精与研究贡献</td>
+</tr>
+<tr>
+<td>S5：课程凝练与试教</td>
+<td>学习卡、实验手册、答辩题、试教记录</td>
+<td>决定学时与学生要求</td>
+</tr>
+</tbody>
+</table></div>
+<p>关卡可以交错，M8 从 S0 开始。优先展开的先修链是模型—训练—数据，以及推理服务—硬件—缓存；与上层工具任务相互解释。</p>
+<p>资源分为 CPU/模拟、小模型单卡、按需较大 GPU 或多机、外部模型服务四类。小实验验证机制，真实设备实验验证系统代价。任何模拟或降规模复现必须标注，不能外推成未测量的集群结论。</p>
+<p>当前不固定模型品牌、GPU 型号、供应商价格或总学时。每次实验冻结必要版本，保留替代模型或简化任务路径；服务和硬件选型以当时可获得的兼容性、资源与测量为依据。</p>
+<h2 id="section-51">13. 可复现与教学材料的交付格式</h2>
+<p>每个实验目录应包含问题与假设、环境与版本、任务/数据划分、运行配置、原始结果、分析、失败案例、资源与人工成本、复现说明和教学笔记。不得把尚未实施的实验写成已完成。</p>
+<p>一张学习卡至少回答：</p>
+<ol>
+<li>这个技术解决什么具体问题？</li>
+<li>简单方法如何工作，它在哪里遇到瓶颈？</li>
+<li>新机制改变了什么，关键推导或状态变化是什么？</li>
+<li>原始论文或实现实际支持什么结论？</li>
+<li>最小复现如何进行，测量和预测是否一致？</li>
+<li>一个反例或失效条件是什么？</li>
+<li>换任务、模型或硬件后，应重新验证哪些假设？</li>
+<li>学生怎样展示个人理解？</li>
+</ol>
+<p>课程资料可以借鉴 <a href="https://cs336.stanford.edu/">Stanford CS336</a> 的模型、数据与系统实践，以及 <a href="https://rdi.berkeley.edu/llm-agents/f24">Berkeley LLM Agents</a> 的主题覆盖；本项目的实验与达标标准由上述学习成果组织。</p>
+<h2 id="section-52">14. 待补证据与版本管理</h2>
+<h3 id="section-53">14.1 当前证据边界</h3>
+<ul>
+<li>“Qwen3.8-35B 与 GLM-5.3、A3B、业务蒸馏及多轮压缩”的具体团队、版本、论文、实现和成功率尚待原始资料。路线作为研究动机保留，不把组合叙述写成已核实成果。</li>
+<li>ICLR、ICML 等会议归属需以官方论文页面或会议记录核对；arXiv 论文不自动意味着相应会议已录用。</li>
+<li>用户提供的 <a href="https://chatgpt.com/share/6aa7e174-d70c-83ee-88fa-458397abaaec">KCS 讨论分享页</a> 在本次访问中未能读取内容。第 9 节仅依据本次消息中的三步描述及 KCS 官方资料，没有推断分享页中的额外细节。</li>
+<li>OpenAI compaction 的内部实现未被公开接口文档确定；目标无关 token 删除仅作为可能研究的策略，不作为供应商实现事实。</li>
+<li>全部实验结果、样本量、硬件配置和非劣效阈值均需在实施时登记。示例不构成已取得的能力认证。</li>
+</ul>
+<h3 id="section-54">14.2 下一版的更新依据</h3>
+<p>v0.2 应根据基础诊断、首轮复现成本和实验难点更新先修图、各模块深度与资源需求；获得内部论文原文后补充案例来源。正式授课版根据试教证据确定学时、作业量和评分细则。</p>
+<p>每次修改保留版本、日期、改变的目标或标准，以及改变的证据。课程核心概念与评价逻辑保持可追溯，前沿论文和工具版本持续更新。</p>
+
+<div class="footer">本阅读版由同名 Markdown 源文档生成。实验均为待实施设计；前沿资料和工具行为需按版本核验。</div>
+</main>
+</div>
+</body>
+</html>

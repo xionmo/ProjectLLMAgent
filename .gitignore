@@ -1,0 +1,22 @@
+# Local machine and runtime artifacts
+.DS_Store
+._*
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+.env
+.env.*
+!.env.example
+/runs/
+/evidence/
+/backups/
+/checkpoints/
+/models/
+/data/raw/
+.cache/
+
+# Private reference and machine-specific continuation records
+/docs/kcs双循环已交付产品的prompt.txt
+/docs/本机实验环境与接续记录-*.md
+/docs/本机实验环境与接续记录-*.html

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LLM 智能体课程的培养目标、能力标准、先修关系与实验设计。">
+<title>Attention Is All You Need：原论文伴读 · v0.1 · 2026-09-19</title>
+<style>
+:root { color-scheme: light; --ink: #1d2b36; --muted: #5c6f79;
+  --accent: #176b70; --border: #dce5e7; --paper: #fff; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; background: #f2f5f5; color: var(--ink);
+  font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 16px; line-height: 1.85; }
+a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.layout { max-width: 1440px; margin: auto; display: grid;
+  grid-template-columns: 280px minmax(0, 1fr); gap: 28px; padding: 28px; }
+nav { position: sticky; top: 24px; height: calc(100vh - 48px); overflow-y: auto;
+  padding: 10px 16px 24px 0; font-size: 13px; }
+.eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .12em; }
+.nav-title { font-size: 19px; font-weight: 700; line-height: 1.6; margin: 8px 0; }
+.nav-meta { color: var(--muted); font-size: 12px; margin: 8px 0 20px; }
+nav ul { list-style: none; padding: 0; margin: 0; }
+nav li { margin: 0 0 4px; }
+nav a { display: block; padding: 6px 8px; border-radius: 6px;
+  text-decoration: none; color: var(--muted); }
+nav a:hover, nav a:focus { background: #e1ecec; color: var(--accent); }
+.nav-sub { padding-left: 12px; font-size: 12px; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  margin: 0 0 20px; }
+.actions a, button { border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; background: white; color: var(--accent); font: inherit;
+  font-size: 12px; cursor: pointer; text-decoration: none; }
+main { min-width: 0; background: var(--paper); padding: 48px 56px;
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 4px 24px #16383a05; }
+h1 { font-size: 29px; line-height: 1.5; letter-spacing: -.015em; margin: 0 0 24px; }
+h2 { font-size: 23px; line-height: 1.55; margin: 56px 0 22px;
+  padding-top: 18px; border-top: 2px solid #d5e7e6; }
+h3 { font-size: 18px; line-height: 1.6; margin: 30px 0 14px; }
+p { margin: 14px 0; }
+strong { color: #143d44; }
+li { margin: 7px 0; }
+blockquote { margin: 24px 0; padding: 6px 20px; background: #eff7f6;
+  border-left: 4px solid var(--accent); }
+.table-wrap { overflow-x: auto; margin: 22px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; line-height: 1.75; }
+th, td { text-align: left; vertical-align: top; padding: 11px 12px;
+  border: 1px solid var(--border); min-width: 100px; }
+th { background: #edf5f4; color: #204f55; font-weight: 700; }
+tbody tr:nth-child(even) { background: #fafcfc; }
+code { font-family: "Cascadia Code", "Noto Sans Mono CJK SC", monospace;
+  font-size: .88em; background: #eef2f3; padding: 2px 5px; border-radius: 3px; }
+pre { overflow-x: auto; border-radius: 7px; background: #edf2f4;
+  border: 1px solid var(--border); padding: 18px; line-height: 1.7; }
+pre code { padding: 0; background: none; }
+.footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 220px minmax(0, 1fr); gap: 16px; padding: 16px; }
+  main { padding: 32px 28px; }
+}
+@media (max-width: 720px) {
+  .layout { display: block; padding: 12px; }
+  nav { position: static; height: auto; max-height: 320px; margin-bottom: 20px; }
+  main { padding: 28px 20px; } h1 { font-size: 24px; } h2 { font-size: 21px; }
+}
+@media print {
+  html { scroll-behavior: auto; }
+  @page { size: A4; margin: 18mm 15mm; }
+  body { background: white; font-size: 10pt; line-height: 1.7; }
+  .layout { display: block; padding: 0; } nav, .actions { display: none; }
+  main { border: 0; padding: 0; box-shadow: none; }
+  h1 { font-size: 21pt; } h2 { font-size: 15pt; margin-top: 28px; }
+  h3 { font-size: 12pt; } h1, h2, h3 { break-after: avoid; }
+  p { orphans: 3; widows: 3; }
+  .table-wrap { overflow: visible; } table { font-size: 8pt; }
+  th, td { min-width: 0; padding: 6px; } tr { break-inside: avoid; }
+  pre { white-space: pre-wrap; overflow: visible; font-size: 8pt; }
+  a { color: #176b70; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav aria-label="文档目录">
+<div class="eyebrow">AGENTS 万事通</div>
+<div class="nav-title">Attention Is All You Need：原论文伴读</div>
+<div class="nav-meta">v0.1 · 2026-09-19<br>研究式学习与课程筹备</div>
+<div class="actions"><a href="Attention-Is-All-You-Need-伴读-v0.1.md">Markdown 源文档</a>
+<button type="button" onclick="window.print()">打印 / 保存 PDF</button></div>
+<ul><li><a href="#section-2">1. 按理解依赖阅读，并最终覆盖全文</a></li>
+<li><a href="#section-3">2. 第一轮：把单行手算接到矩阵公式</a></li>
+<li><a href="#section-4">3. 自建练习：只改变 V 的含义</a></li>
+<li><a href="#section-5">4. 从公式回到实现之前的关卡</a></li>
+<li><a href="#section-6">5. 原文、课程选择与后续演化分开记录</a></li>
+<li><a href="#section-7">6. 当前状态</a></li></ul>
+</nav>
+<main>
+<h1 id="section-1">Attention Is All You Need：原论文伴读</h1>
+<p><strong>v0.1 · 2026-09-19 · 配合 U02—U03，先手算再实现</strong></p>
+<p>原文：<a href="https://arxiv.org/abs/1706.03762">arXiv 条目</a> · <a href="https://arxiv.org/html/1706.03762v7">v7 HTML</a> · <a href="https://arxiv.org/pdf/1706.03762">PDF</a>。</p>
+<p>本页是阅读路径、问题与自建练习。公式含义逐段讲解，完成相应手算后再写少量张量代码；不要求先逐行读懂完整探针。原文以 encoder-decoder 为整体架构，我们的首个完整实现按课程计划采用 decoder-only，两者分别标注。</p>
+<p>返回：<a href="%E7%AC%AC%E4%B8%80%E5%8D%95%E5%85%83-%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AE%9E%E9%AA%8C%E5%9F%BA%E7%BA%BF-v0.1.md">第一单元</a> · <a href="%E8%AF%BE%E7%A8%8B%E5%AE%9E%E6%96%BD%E6%96%B9%E6%A1%88-v0.1.md">实施方案</a></p>
+<h2 id="section-2">1. 按理解依赖阅读，并最终覆盖全文</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>阅读位置</th>
+<th>要解决的问题</th>
+<th>当轮的小任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>§3.2、§3.2.1、公式 (1)、图 2 左半</td>
+<td>每个符号是什么对象，怎样算一行注意力？</td>
+<td>对齐已经手算的 Q/K、mask、权重和 V；检查维度</td>
+</tr>
+<tr>
+<td>2</td>
+<td>§3.2.1 的缩放解释与相关脚注</td>
+<td>为什么匹配分数要缩放？</td>
+<td>从小向量点积开始，比较维度与分数尺度</td>
+</tr>
+<tr>
+<td>3</td>
+<td>§3.2.2、图 2 右半</td>
+<td>多头怎样产生、拼接并投影？</td>
+<td>从两个小头写出各阶段形状，再手算局部</td>
+</tr>
+<tr>
+<td>4</td>
+<td>图 1、§3.1、§3.2.3</td>
+<td>encoder、decoder 和交叉注意力怎样连接？</td>
+<td>标出每个注意力模块 Q/K/V 的来源和可见范围</td>
+</tr>
+<tr>
+<td>5</td>
+<td>§3.3—§3.5</td>
+<td>FFN、embedding、位置表示怎样接入？</td>
+<td>给一个位置补齐计算；核对哪些操作跨位置、哪些逐位置</td>
+</tr>
+<tr>
+<td>6</td>
+<td>摘要、§1—§2、§4</td>
+<td>作者面对什么旧瓶颈，比较了哪些机制？</td>
+<td>按问题重述论点，区分结构分析、实验结果和外推</td>
+</tr>
+<tr>
+<td>7</td>
+<td>§5、§6.1—§6.2</td>
+<td>怎样训练与评价，比较口径如何？</td>
+<td>读训练配置和主实验表，指出复现必需条件</td>
+</tr>
+<tr>
+<td>8</td>
+<td>§6.3—§6.4、§7、附录与参考文献</td>
+<td>哪些消融、迁移和可视化支持结论，边界在哪里？</td>
+<td>选一个能缩小复现的问题；最后按原文顺序口头复盘</td>
+</tr>
+</tbody>
+</table></div>
+<p>每次只推进一个可理解的计算或判断。原论文报告的数值不作为当前 4090 或现代模型的预期性能；扩展阅读按该轮问题引入。</p>
+<h2 id="section-3">2. 第一轮：把单行手算接到矩阵公式</h2>
+<p>原文公式 (1) 写作：</p>
+<pre><code class="language-text">Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V
+</code></pre>
+<p>原公式这一行没有显式写因果 mask。对需要可见性约束的使用方式，可在 softmax 前加入相应的遮罩；原文在 §3.2.3 讨论 decoder 的这一限制。</p>
+<p>先用以下记号查维度：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>形状</th>
+<th>行表示什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q</td>
+<td>n_q × d_k</td>
+<td>每个读取位置的 query</td>
+</tr>
+<tr>
+<td>K</td>
+<td>n_k × d_k</td>
+<td>每个可供读取位置的 key</td>
+</tr>
+<tr>
+<td>V</td>
+<td>n_k × d_v</td>
+<td>同一批来源位置的 value</td>
+</tr>
+<tr>
+<td>A：归一化权重</td>
+<td>n_q × n_k</td>
+<td>一个 query 对各来源位置的混合系数</td>
+</tr>
+<tr>
+<td>O：汇合结果</td>
+<td>n_q × d_v</td>
+<td>每个读取位置获得的向量</td>
+</tr>
+</tbody>
+</table></div>
+<p>Q/K 的特征维度须能匹配；K/V 的来源位置须一一对应。d_v 决定这个注意力运算的输出特征宽度，不必等于 d_k。这里的 V 表示 Value 矩阵，不能与其它讲义中表示词表大小的符号混为一谈。</p>
+<h2 id="section-4">3. 自建练习：只改变 V 的含义</h2>
+<p>沿用课堂中的三个位置。只算位置 2：</p>
+<pre><code class="language-text">q2 = 1
+keys = [0, 1, 2]
+values = [(2, 0), (0, 4), (9, 9)]
+位置 2 的因果范围：位置 1、2
+</code></pre>
+<p>得到 a21=1/(1+e)，a22=e/(1+e)，a23=0。把 v2 从 (0,4) 改为 (0,8)，保持 Q/K/mask 不变：</p>
+<pre><code class="language-text">原 o2 ≈ (0.537883, 2.924234)
+新 o2 ≈ (0.537883, 5.848469)
+差值 Δo2 = a22 × Δv2
+</code></pre>
+<p>这项练习同时检查计算和三条依赖关系：</p>
+<ol>
+<li>匹配系数与被汇合内容是不同对象；只改变本次运算的 V 不改变 A。</li>
+<li>固定 A 后，O=A V 对 V 是线性运算。若只改一个来源向量，输出改变量就是它的权重乘该向量改变量。</li>
+<li>相同注意力权重仍可能产生不同输出，读取权重图时还要考虑 V 与后续计算。</li>
+</ol>
+<p>本例第二分量恰好翻倍，是因为另一个可见来源 v1 的第二分量为 0。一般情况下，改 v2 的第二分量只改变相应贡献，不保证总输出第二分量翻倍。</p>
+<p>这是一项局部、受控的干预。若改变原始 token 或其输入表示，Q/K/V 可能一起改变；后续层的注意力也可能随之改变，不能把局部结论扩成整网结论。</p>
+<h2 id="section-5">4. 从公式回到实现之前的关卡</h2>
+<p>能完成以下解释后，再用几行张量运算复现：</p>
+<ul>
+<li>区分向量、标量权重与矩阵；指出每次乘法的维度。</li>
+<li>用一句话说明每个输出向量由哪些来源构成。</li>
+<li>预测只改变 Q、只改变 K、只改变 V 或改变 mask，分别可能影响哪些中间量。</li>
+<li>说明注意力位置权重与最终词表概率的区别。</li>
+<li>比较“整批矩阵运算”和“逐个 query 手算”为什么代表同一计算。</li>
+</ul>
+<h2 id="section-6">5. 原文、课程选择与后续演化分开记录</h2>
+<p>读图 1 与相关段落时，单独记录原文的设置。本课程已选择的 pre-LayerNorm、GELU 与 learned absolute position 是教学实现取舍，不能直接当作原论文的配置。原文采用残差后归一化，FFN 中使用 ReLU，并讨论位置编码；逐项阅读时再比较替代方案。</p>
+<p>历史案例安排在对应知识具备后：先理解作者当时的瓶颈和论据，再讨论后续实现改变了什么。每次区分公式恒等关系、作者的实验发现和我们的待验证推测。</p>
+<h2 id="section-7">6. 当前状态</h2>
+<p>已完成：原文与章节入口核对、伴读路径、单行注意力与维度说明、自建 V 干预练习的数值核对。</p>
+<p>仍待逐轮完成：完整伴读、每项手算、从张量代码逐步搭建 Transformer、训练及独立实验。加入阅读路线不等于已经完成论文复现。</p>
+
+<div class="footer">本阅读版由同名 Markdown 源文档生成。实验状态以源文档标注为准；前沿资料和工具行为需按版本核验。</div>
+</main>
+</div>
+</body>
+</html>

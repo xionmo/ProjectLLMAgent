@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="LLM 智能体课程的培养目标、能力标准、先修关系与实验设计。">
+<title>《LLM 智能体的原理、系统与协作》课程实施方案 · v0.1 · 2026-09-18</title>
+<style>
+:root { color-scheme: light; --ink: #1d2b36; --muted: #5c6f79;
+  --accent: #176b70; --border: #dce5e7; --paper: #fff; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body { margin: 0; background: #f2f5f5; color: var(--ink);
+  font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 16px; line-height: 1.85; }
+a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.layout { max-width: 1440px; margin: auto; display: grid;
+  grid-template-columns: 280px minmax(0, 1fr); gap: 28px; padding: 28px; }
+nav { position: sticky; top: 24px; height: calc(100vh - 48px); overflow-y: auto;
+  padding: 10px 16px 24px 0; font-size: 13px; }
+.eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .12em; }
+.nav-title { font-size: 19px; font-weight: 700; line-height: 1.6; margin: 8px 0; }
+.nav-meta { color: var(--muted); font-size: 12px; margin: 8px 0 20px; }
+nav ul { list-style: none; padding: 0; margin: 0; }
+nav li { margin: 0 0 4px; }
+nav a { display: block; padding: 6px 8px; border-radius: 6px;
+  text-decoration: none; color: var(--muted); }
+nav a:hover, nav a:focus { background: #e1ecec; color: var(--accent); }
+.nav-sub { padding-left: 12px; font-size: 12px; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  margin: 0 0 20px; }
+.actions a, button { border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 10px; background: white; color: var(--accent); font: inherit;
+  font-size: 12px; cursor: pointer; text-decoration: none; }
+main { min-width: 0; background: var(--paper); padding: 48px 56px;
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 4px 24px #16383a05; }
+h1 { font-size: 29px; line-height: 1.5; letter-spacing: -.015em; margin: 0 0 24px; }
+h2 { font-size: 23px; line-height: 1.55; margin: 56px 0 22px;
+  padding-top: 18px; border-top: 2px solid #d5e7e6; }
+h3 { font-size: 18px; line-height: 1.6; margin: 30px 0 14px; }
+p { margin: 14px 0; }
+strong { color: #143d44; }
+li { margin: 7px 0; }
+blockquote { margin: 24px 0; padding: 6px 20px; background: #eff7f6;
+  border-left: 4px solid var(--accent); }
+.table-wrap { overflow-x: auto; margin: 22px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; line-height: 1.75; }
+th, td { text-align: left; vertical-align: top; padding: 11px 12px;
+  border: 1px solid var(--border); min-width: 100px; }
+th { background: #edf5f4; color: #204f55; font-weight: 700; }
+tbody tr:nth-child(even) { background: #fafcfc; }
+code { font-family: "Cascadia Code", "Noto Sans Mono CJK SC", monospace;
+  font-size: .88em; background: #eef2f3; padding: 2px 5px; border-radius: 3px; }
+pre { overflow-x: auto; border-radius: 7px; background: #edf2f4;
+  border: 1px solid var(--border); padding: 18px; line-height: 1.7; }
+pre code { padding: 0; background: none; }
+.footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--muted); }
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 220px minmax(0, 1fr); gap: 16px; padding: 16px; }
+  main { padding: 32px 28px; }
+}
+@media (max-width: 720px) {
+  .layout { display: block; padding: 12px; }
+  nav { position: static; height: auto; max-height: 320px; margin-bottom: 20px; }
+  main { padding: 28px 20px; } h1 { font-size: 24px; } h2 { font-size: 21px; }
+}
+@media print {
+  html { scroll-behavior: auto; }
+  @page { size: A4; margin: 18mm 15mm; }
+  body { background: white; font-size: 10pt; line-height: 1.7; }
+  .layout { display: block; padding: 0; } nav, .actions { display: none; }
+  main { border: 0; padding: 0; box-shadow: none; }
+  h1 { font-size: 21pt; } h2 { font-size: 15pt; margin-top: 28px; }
+  h3 { font-size: 12pt; } h1, h2, h3 { break-after: avoid; }
+  p { orphans: 3; widows: 3; }
+  .table-wrap { overflow: visible; } table { font-size: 8pt; }
+  th, td { min-width: 0; padding: 6px; } tr { break-inside: avoid; }
+  pre { white-space: pre-wrap; overflow: visible; font-size: 8pt; }
+  a { color: #176b70; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav aria-label="文档目录">
+<div class="eyebrow">AGENTS 万事通</div>
+<div class="nav-title">《LLM 智能体的原理、系统与协作》课程实施方案</div>
+<div class="nav-meta">v0.1 · 2026-09-18<br>研究式学习与课程筹备</div>
+<div class="actions"><a href="课程实施方案-v0.1.md">Markdown 源文档</a>
+<button type="button" onclick="window.print()">打印 / 保存 PDF</button></div>
+<ul><li><a href="#section-2">1. 先把哪条学习链走通</a></li>
+<li><a href="#section-3">2. 本机条件与可执行范围</a></li>
+<li class="nav-sub"><a href="#section-4">2.1 4090 上怎样安排 NVFP4</a></li>
+<li class="nav-sub"><a href="#section-5">2.2 预算如何确定</a></li>
+<li><a href="#section-6">3. 40 个学习单元：34 个基础单元与 6 个图片输入单元</a></li>
+<li class="nav-sub"><a href="#section-7">图片输入是共同主线</a></li>
+<li class="nav-sub"><a href="#section-8">穿插主题：函数与目标怎样按任务选择</a></li>
+<li class="nav-sub"><a href="#section-9">A. 模型与训练：U00—U06</a></li>
+<li class="nav-sub"><a href="#section-10">B. 推理服务与量化：U07—U14</a></li>
+<li class="nav-sub"><a href="#section-11">C. 数据、后训练与推理计算：U15—U19</a></li>
+<li class="nav-sub"><a href="#section-12">D. 状态、harness 与协作：U20—U26</a></li>
+<li class="nav-sub"><a href="#section-13">E. 研究可信度与人的学习：U27—U30</a></li>
+<li class="nav-sub"><a href="#section-14">F. RSI 与综合研究：U31—U33</a></li>
+<li><a href="#section-15">4. 两项旗舰共享哪些资产</a></li>
+<li class="nav-sub"><a href="#section-16">4.1 旗舰 A：可解释的模型与能力塑造</a></li>
+<li class="nav-sub"><a href="#section-17">4.2 旗舰 B：模型服务与资源约束</a></li>
+<li class="nav-sub"><a href="#section-18">4.3 联合研究如何避免混杂</a></li>
+<li><a href="#section-19">5. 九模块的 L3 关卡与 L4 研究卡</a></li>
+<li><a href="#section-20">6. 首轮推进与工作量校准</a></li>
+<li><a href="#section-21">7. 每次课的固定教学结构</a></li>
+<li class="nav-sub"><a href="#section-22">历史案例的插入位置（2026-09-19）</a></li>
+<li><a href="#section-23">8. 文献与版本管理</a></li>
+<li><a href="#section-24">9. 本版完成到哪里</a></li></ul>
+</nav>
+<main>
+<h1 id="section-1">《LLM 智能体的原理、系统与协作》课程实施方案</h1>
+<p><strong>v0.1 · 2026-09-18 · 课程负责人研究与备课路线</strong></p>
+<p>依据：<a href="%E5%9F%B9%E5%85%BB%E7%9B%AE%E6%A0%87%E4%B8%8E%E8%83%BD%E5%8A%9B%E6%A0%87%E5%87%86-v0.4.md">培养目标与能力标准 v0.4</a>。本文件把已确认的目标展开为学习单元、实验顺序、资源配置与验收关卡，沿用原有深度；新增图片输入要求已同步到 v0.4。当前交付为课程设计；除另有证据的环境检查外，实验均待实施。</p>
+<p>直接开始：<a href="%E7%AC%AC%E4%B8%80%E5%8D%95%E5%85%83-%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AE%9E%E9%AA%8C%E5%9F%BA%E7%BA%BF-v0.1.md">第一单元教学包：U00—U03</a> · <a href="%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83%E4%B8%8E%E5%A4%8D%E7%8E%B0.md">实验环境与复现</a> · <a href="../templates/%E5%AE%9E%E9%AA%8C%E9%A2%84%E6%B3%A8%E5%86%8C%E4%B8%8E%E6%8A%A5%E5%91%8A.md">实验报告模板</a></p>
+<h2 id="section-2">1. 先把哪条学习链走通</h2>
+<p>先用一个很小、能逐行解释的语言模型，走通“数据 → 条件概率 → 模型计算 → 训练 → 生成与缓存”；然后让它成为可以测量和修改的服务。获得稳定对象后，再研究后训练、推理预算和 Agent 系统。</p>
+<p>课程负责人的第一轮工作顺序为：</p>
+<pre><code class="language-text">U00—U06：建立模型与训练基线
+    ↓ 同一组权重、输入和评价资产
+U07—U14：追踪执行、缓存、量化、调度与传输
+    ↓ 已能识别能力瓶颈与系统瓶颈
+U15—U19：通过数据、后训练和推理计算改变能力
+    ↓ 固定可调用、可测量的模型服务
+U20—U26：上下文、harness、恢复与协作
+    ↓ 形成可靠的实验环境
+U27—U30：集中审计研究结论与人机学习
+    ↓
+U31—U33：RSI 继承对照、迁移与课程凝练
+
+M8 的实验方法、M9 的预测与独立答辩从 U00 就开始。
+</code></pre>
+<p>这是推进依赖，不是要求把一整块学完才接触另一块。U00 用一条合成工具轨迹建立全景，U03 提前引出 KV，U07—U14 深入系统；到 U19 再联合比较训练与推理预算。U27—U30 是深化审计，前面各单元已必须执行相应研究规范。</p>
+<p>本轮以个人研究式学习为单位；正式课时、学分和学期编排在复现与试教后确定。以下 U00—U33 共 34 个基础单元，加上插入其中的 V01—V06 图片输入单元，合计 40 个单元。各自包含讲解、实践和答辩，可以分多次学习完成，不等于 40 次课堂课。</p>
+<h2 id="section-3">2. 本机条件与可执行范围</h2>
+<p>本地只读检查确认 RTX 4090，24564 MiB 显存、计算能力 8.9、驱动 616.56。WSL 可见内存约 23 GiB，Windows 物理内存约 31.9 GiB；两者不可直接当作同一可用容量。已查询到 GPU，不代表 PyTorch 或推理引擎已经验证通过。</p>
+<p>课程目录在共享存储：Windows 的 Z 盘与 WSL 的 /mnt/Projects 指向同一位置。代码、文档和归档留在项目；正式训练前选定本机热数据目录，分别测本地与共享存储的加载时间，再决定数据缓存位置。不要把共享文件系统 I/O 混入 GPU 性能结论。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>实验层级</th>
+<th>首选规模与工作</th>
+<th>本机怎样完成</th>
+<th>结果边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D0 计算正确性</td>
+<td>2 层、宽度 64、短序列、FP32</td>
+<td>CPU 或单卡；固定输入，检查梯度、mask、缓存</td>
+<td>解释数值机制，不评价语言能力</td>
+</tr>
+<tr>
+<td>D1 从零构建</td>
+<td>4 层、宽度 256、4 个头、FFN 1024、byte tokenizer、上下文 256—512</td>
+<td>约 3—4M 参数，实际由代码计数；逐步增大 microbatch</td>
+<td>先完成可解释的训练与恢复；规模不是达标标准</td>
+</tr>
+<tr>
+<td>D2 架构与数据对照</td>
+<td>约 30—100M 参数；同一数据协议</td>
+<td>先测 100 步的显存与设备时间，再定 token 预算</td>
+<td>不把小模型结果直接外推到前沿模型</td>
+</tr>
+<tr>
+<td>D3 开放权重迁移</td>
+<td>首先选择 0.5—3B 的兼容模型；7—8B 为后续候选</td>
+<td>检查许可、tokenizer、普通全注意力或混合状态、引擎支持与实际内存</td>
+<td>模型家族与 revision 在实施前锁定，不以“最新”作选择标准</td>
+</tr>
+<tr>
+<td>D4 后训练</td>
+<td>小模型全参数训练；较大模型优先考虑 LoRA 等可控方案</td>
+<td>由激活、序列长度和优化器实测决定配置</td>
+<td>不能只按权重大小判断是否可训练</td>
+</tr>
+<tr>
+<td>D5 推理系统</td>
+<td>单 GPU 的缓存、调度、量化、负载、跨进程传输</td>
+<td>深入一套真实引擎，再定点比较第二套</td>
+<td>单卡并发、进程通信不构成多 GPU 加速证据</td>
+</tr>
+<tr>
+<td>D6 扩展验证</td>
+<td>Blackwell 原生 NVFP4；多 GPU/多机 TP、PP、EP 或 PD 分离</td>
+<td>到达对应研究问题时追加设备实验</td>
+<td>没有设备时标记“待真实硬件验证”，保留 L3/L4 缺口</td>
+</tr>
+</tbody>
+</table></div>
+<p>本轮默认先读通 <strong>vLLM</strong> 的请求、调度与 KV 路径；SGLang 用于前缀复用、分层缓存等设计的定点比较。这是减少并行学习负担的教学选择，不是性能排名。安装前锁定兼容的驱动、Python、PyTorch、CUDA wheel 与引擎版本；训练环境和服务环境分别建环境、分别保存依赖清单。</p>
+<h3 id="section-4">2.1 4090 上怎样安排 NVFP4</h3>
+<p>NVFP4 专题分成三个可独立验收的层次：</p>
+<ol>
+<li>**数值层：**实现 E2M1 取值、16 值分块、E4M3 块缩放和张量缩放的参考路径，核对舍入、全零块、异常值、打包和实际字节数。</li>
+<li>**本机执行层：**依据具体软件版本核查可用的 weight-only / Marlin 路径，与已验证的 BF16 或 INT4 路径比较；记录实际内核及反量化发生位置。可加载某格式不意味着使用原生 FP4 矩阵乘。</li>
+<li>**硬件迁移层：**在支持的 Blackwell 设备上验证原生 NVFP4。预先固定模型、校准集、输入形状和质量口径，再比较差异；设备不同也改变带宽、容量和计算能力，不能把全部收益归因于格式。</li>
+</ol>
+<p>NVIDIA 的格式说明将原生 NVFP4 与 Blackwell Tensor Core 联系起来；vLLM 当前兼容表列有 Ada 上的 Marlin FP4 路径。二者描述不同执行条件。本机是否满足某模型的量化组合仍要实测。<a href="https://developer.nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-precision-inference/">NVIDIA 格式说明</a> · <a href="https://docs.vllm.ai/en/stable/features/quantization/">vLLM 量化兼容表</a></p>
+<h3 id="section-5">2.2 预算如何确定</h3>
+<p>先用短预实验测成本，再定正式预算。第一轮建议每个候选先跑 100 步或一个小负载批次；这用于发现 OOM、数据错误和数量级问题，不用于宣称算法优劣。</p>
+<p>每次正式实验预先选一个主资源约束：实际训练 token、估算 FLOPs、GPU 设备时间或端到端预算，同时报告其他可观测投入。相同训练步数、相同生成 token 数或相同实验轮数不能自动视为等成本。</p>
+<p>单卡训练与服务性能测量分时运行。记录其他 GPU 使用、功耗状态、冷暖缓存、编译和预热；做配对或随机交错测量，避免把时段变化当成干预效果。正式规模由预实验决定，不承诺尚未测得的吞吐或耗时。</p>
+<h2 id="section-6">3. 40 个学习单元：34 个基础单元与 6 个图片输入单元</h2>
+<p>“对照与产物”列是每单元的实践重点；完整 L3 通常需要几个相邻单元共同完成机制、诊断和迁移证据。任何一节课的演示都不自动等同于 L3。</p>
+<h3 id="section-7">图片输入是共同主线</h3>
+<p>图片输入的完整教案与实验契约见 <a href="%E5%A4%9A%E6%A8%A1%E6%80%81%E5%9B%BE%E7%89%87%E8%BE%93%E5%85%A5-%E8%AF%BE%E7%A8%8B%E4%B8%8E%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1-v0.1.md">多模态增补</a>。V01—V06 插入下列位置：</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>先修位置</th>
+<th>必须交付</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V01 图片输入与证据依赖</td>
+<td>U00 后观察，U03 后实现</td>
+<td>正图/无图/反事实换图与输入追踪</td>
+</tr>
+<tr>
+<td>V02 视觉编码与图文连接</td>
+<td>U05 后</td>
+<td>patch、编码器与连接器的形状/梯度、受控适配</td>
+</tr>
+<tr>
+<td>V03 多模态数据与训练</td>
+<td>U16 后</td>
+<td>图文配对与 loss mask；训练对照和能力退化</td>
+</tr>
+<tr>
+<td>V04 图片推理服务</td>
+<td>U09/U10 后</td>
+<td>分辨率/图数/并发的质量、显存和分段时延</td>
+</tr>
+<tr>
+<td>V05 视觉与推理评价</td>
+<td>V01 后开始，U19/U27 深化</td>
+<td>OCR/图表/关系任务，反事实与失败分层</td>
+</tr>
+<tr>
+<td>V06 多轮图片与 harness</td>
+<td>U22/U23 后</td>
+<td>图片身份、裁剪与缓存失效，恢复及执行边界</td>
+</tr>
+</tbody>
+</table></div>
+<p>E13 贯穿两个旗舰；图片编码/融合参与旗舰 A，图片预处理、视觉编码、缓存与服务测量参与旗舰 B。首先使用小型开放权重 VLM 单图推理，再安排连接器/LoRA 适配。GPU 容量和内核支持由实际模型与处理预算验证。</p>
+<h3 id="section-8">穿插主题：函数与目标怎样按任务选择</h3>
+<p>2026-09-18 根据学习反馈补充到现有单元，完整练习见 <a href="%E7%AC%AC%E4%B8%80%E5%8D%95%E5%85%83-%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AE%9E%E9%AA%8C%E5%9F%BA%E7%BA%BF-v0.1.md">第一单元第 3.4 节</a>。保留 40 个单元及原先修关系。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>位置</th>
+<th>逐步展开的问题</th>
+<th>验收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U01</td>
+<td>区分内部激活、输出分布和损失；互斥分类、多标签、连续预测怎样选表示与目标</td>
+<td>写出任务—标签—输出约束—损失的设计理由；检查错误搭配</td>
+</tr>
+<tr>
+<td>U02</td>
+<td>ReLU/GELU/SiLU、非线性与 FFN；注意力 softmax 与词表 softmax 各自归一化什么</td>
+<td>最小实现、梯度核对、一个失效或不适用条件</td>
+</tr>
+<tr>
+<td>U03</td>
+<td>概率饱和、交叉熵输出梯度、数值稳定性、训练与验证的区别</td>
+<td>有限差分、自动微分、极端分数与合并损失接口对照</td>
+</tr>
+<tr>
+<td>U17/U18</td>
+<td>从硬标签到教师分布、蒸馏、偏好与奖励；校准和下游指标</td>
+<td>冻结其它条件，比较目标变化及独立任务收益/退化</td>
+</tr>
+</tbody>
+</table></div>
+<p>2026-09-19 补入：U01 深入“可见性—目标—计分位置”的联合设计和开放式答案；U02 比较 encoder/decoder 与 Q/K/V；U03 先建立普通生成基线，U10/U19 再区分候选批量验证与扩散等其它生成路线。首个固定权重未来扰动检查已作为 E01 机制探针实施，完整模型和性能实验仍待运行。</p>
+<h3 id="section-9">A. 模型与训练：U00—U06</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U00 系统全景与实验契约</td>
+<td>一次工具任务经过哪些组件？模型生成和程序执行如何分界？</td>
+<td>合成工具轨迹、环境清单、先修诊断、第一份预测记录</td>
+<td>E01；M6/M8/M9</td>
+</tr>
+<tr>
+<td>U01 文本为何能成为预测问题</td>
+<td>条件概率、全词表候选与开放式目标、输出分布/损失、byte/BPE、teacher forcing、标签移位</td>
+<td>unigram/bigram 基线；训练内构建词表；不同分词口径比较</td>
+<td>E01/E02；M1/M2</td>
+</tr>
+<tr>
+<td>U02 从矩阵写出 decoder</td>
+<td>Q/K/V、因果/双向可见性、encoder/decoder、位置、残差、归一化、FFN 与非线性激活</td>
+<td>手写前向与参考核对；破坏 mask 的负例；形状与参数账</td>
+<td>E02；M1</td>
+</tr>
+<tr>
+<td>U03 训练、生成与缓存</td>
+<td>反向传播、softmax/交叉熵梯度与数值稳定性、优化、梯度累积、检查点、prefill/decode</td>
+<td>小样本过拟合；中断恢复；有/无 KV 的 logits 对照</td>
+<td>E02；M1/M2/M4</td>
+</tr>
+<tr>
+<td>U04 数据让模型学到什么</td>
+<td>来源、去重、分组切分、配比、数据量、长度泛化</td>
+<td>两种等预算配比；污染注入；验证与迁移结果</td>
+<td>E02；M2/M8</td>
+</tr>
+<tr>
+<td>U05 架构怎样改变能力和成本</td>
+<td>MHA/MQA/GQA、Dense/MoE、路由与负载、位置外推、混合状态</td>
+<td>先做 MHA/GQA 单因素对照；MoE 最小路由器与失败案例</td>
+<td>E02；M1</td>
+</tr>
+<tr>
+<td>U06 训练系统与第一轮研究</td>
+<td>混合精度、重计算、优化器状态、有效 batch、训练瓶颈</td>
+<td>一项内存干预；受控架构/数据对照；S1 答辩</td>
+<td>E02；M1/M2</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-10">B. 推理服务与量化：U07—U14</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U07 硬件与性能模型</td>
+<td>SRAM、GDDR/HBM、DDR、NVMe、PCIe；算术强度与排队</td>
+<td>权重/激活/KV/工作区分账；预测 prefill 与 decode 瓶颈</td>
+<td>E05；M4</td>
+</tr>
+<tr>
+<td>U08 KV 的正确性与生命周期</td>
+<td>位置、掩码、追加、释放、前缀匹配、分页与碎片</td>
+<td>连续/分块 prefill 与逐 token 等价性；长短混合分配模拟</td>
+<td>E05；M1/M4</td>
+</tr>
+<tr>
+<td>U09 读通一套推理引擎</td>
+<td>请求入口、tokenizer、scheduler、model runner、返回流</td>
+<td>固定版本的源码调用图；取消请求后的 KV 回收核对</td>
+<td>E05；M4/M6</td>
+</tr>
+<tr>
+<td>U10 请求调度与有效吞吐</td>
+<td>静态/连续批处理、chunked prefill、草稿/多 token 候选验证、到达率、尾延迟</td>
+<td>受控到达负载；短/长请求干扰；改一处调度或扩展策略</td>
+<td>E05；M4</td>
+</tr>
+<tr>
+<td>U11 量化格式与误差</td>
+<td>INT4、FP8、MXFP4、NVFP4；缩放、异常值、位打包</td>
+<td>参考量化器、数值边界样例、元数据与内存账</td>
+<td>E06；M1/M4</td>
+</tr>
+<tr>
+<td>U12 校准、工具库与内核</td>
+<td>PTQ/QAT、校准分布、Model Optimizer、layout、累加与回退</td>
+<td>从量化器到导出再到 GEMM 的源码图；本机可用算子对照</td>
+<td>E06；M2/M4</td>
+</tr>
+<tr>
+<td>U13 量化模型的服务质量</td>
+<td>权重/激活/KV 精度分开改变；冷暖缓存与形状依赖</td>
+<td>保留集质量、峰值内存、TTFT/TPOT、有效吞吐联合报告</td>
+<td>E05/E06；M3/M4/M8</td>
+</tr>
+<tr>
+<td>U14 并行、分层与传输</td>
+<td>DP/TP/PP/EP、PD 分离、主存/存储卸载、复制与重算</td>
+<td>本机真实跨进程/设备传输；模拟队列；明确多卡验证缺口</td>
+<td>E05；M4</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-11">C. 数据、后训练与推理计算：U15—U19</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U15 从任务环境到训练轨迹</td>
+<td>环境状态、可执行任务、验证器、失败分布、去重</td>
+<td>全新受控任务环境；验证过的轨迹与隔离任务族</td>
+<td>E03；M2/M8</td>
+</tr>
+<tr>
+<td>U16 指令与工具学习</td>
+<td>SFT、loss mask、packing、全参/LoRA、协议合法性</td>
+<td>基础模型/提示改进/训练对照；工具观察不作模型目标的核对</td>
+<td>E03；M2/M6</td>
+</tr>
+<tr>
+<td>U17 蒸馏怎样转移行为</td>
+<td>输出模仿、logits 蒸馏、教师错误、学生访问状态</td>
+<td>等教师预算的筛选方案；长度/任务族迁移与旧能力退化</td>
+<td>E03；M2</td>
+</tr>
+<tr>
+<td>U18 偏好、奖励与信用分配</td>
+<td>DPO、策略梯度、可验证奖励、KL、奖励投机</td>
+<td>先实现 DPO 或一种奖励更新；与等数据 SFT 比较并审计奖励</td>
+<td>E03；M2/M8</td>
+</tr>
+<tr>
+<td>U19 推理计算怎样花</td>
+<td>采样、搜索、规划、工具反馈、验证与停止</td>
+<td>直接生成/多候选/部署选择器；两个训练配置 × 两种推理预算</td>
+<td>E04；M3/M4</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-12">D. 状态、harness 与协作：U20—U26</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U20 上下文与外部状态</td>
+<td>信息路由、证据来源、检索、时效、冲突和更正</td>
+<td>可追踪上下文组装；对过期事实的更正和再检索</td>
+<td>E07；M5</td>
+</tr>
+<tr>
+<td>U21 压缩与目标变化</td>
+<td>截断、摘要、handoff、目标相关选择及信息丢失</td>
+<td>同轨迹多种压缩；约束保留；新目标与多次恢复对照</td>
+<td>E07；M5/M8</td>
+</tr>
+<tr>
+<td>U22 运行时状态机</td>
+<td>工具契约、事件、观察、行动、预算和完成条件</td>
+<td>最小 harness；状态可重放；完成声明核对外部结果</td>
+<td>E08；M6</td>
+</tr>
+<tr>
+<td>U23 故障与恢复</td>
+<td>超时、取消、幂等、部分完成、状态过期、检查点</td>
+<td>在副作用前/后中断；重复调用与错误完成负例</td>
+<td>E08；M6/M8</td>
+</tr>
+<tr>
+<td>U24 成熟运行时的选择与扩展</td>
+<td>模型接口、上下文装配、工具调度与审批边界</td>
+<td>修改一个实际扩展点；迁移到第二种工具契约</td>
+<td>E08；M6</td>
+</tr>
+<tr>
+<td>U25 多 Agent 的任务结构</td>
+<td>依赖图、关键路径、共享/独立上下文、通信与合并</td>
+<td>单 Agent/固定流程/协作对照；可分解与强顺序两类任务</td>
+<td>E09；M7</td>
+</tr>
+<tr>
+<td>U26 模型分配与相关错误</td>
+<td>异构路由、验证独立性、开销和动态委派</td>
+<td>预算匹配的模型路由；故意构造共因错误与合并失败</td>
+<td>E09；M3/M7</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-13">E. 研究可信度与人的学习：U27—U30</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U27 审计“提高了多少”</td>
+<td>配对、任务族聚类、重复试验、选择偏差、置信区间</td>
+<td>独立复核一次已做的提升；重算失败/重试/人工成本</td>
+<td>E12；M8</td>
+</tr>
+<tr>
+<td>U28 环境边界与评价器</td>
+<td>不可信输入、工具越权、状态泄漏、评分者偏差</td>
+<td>受控提示注入与程序阻断；改变判题风格的评价器审计</td>
+<td>E08/E12；M6/M8</td>
+</tr>
+<tr>
+<td>U29 认知与技术直觉</td>
+<td>语言/能力/解释、元认知、认知卸载、信心校准</td>
+<td>对同类问题先独立预测再 AI 协助；记录人工修正与信心</td>
+<td>E11；M9</td>
+</tr>
+<tr>
+<td>U30 教学与组织设计</td>
+<td>支架、反馈、角色责任、独立迁移、延后保持</td>
+<td>同伴试教；即时与延后新题；单人预实验与群体结论分开</td>
+<td>E11；M9</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="section-14">F. RSI 与综合研究：U31—U33</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>单元</th>
+<th>核心问题与必须讲清的机制</th>
+<th>对照与产物</th>
+<th>对应</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U31 建立研究改进器基线</td>
+<td>对象层与策略层、实验历史、候选空间、外部预算执行器</td>
+<td>R0 简单搜索与 R1 固定但能用反馈的研究 Agent</td>
+<td>E10；M2/M4/M8</td>
+</tr>
+<tr>
+<td>U32 策略继承与迁移</td>
+<td>策略版本、真实调用、共同检查点分叉、审计隔离</td>
+<td>R2 可继承策略、R3 继承/重置；新研究任务与总成本对照</td>
+<td>E10；M6/M7/M8</td>
+</tr>
+<tr>
+<td>U33 综合贡献与试教</td>
+<td>跨层归因、反例、可复现材料、个人研究判断</td>
+<td>E12 报告、九模块证据索引、论文差距卡、课程试教修订</td>
+<td>E12；全部模块</td>
+</tr>
+</tbody>
+</table></div>
+<p>U31—U32 只研究训练或服务改进策略，沿用 v0.3 的 R0—R3 定义；不再搭建“值班接管 → 知识提炼 → 造题 → 回归修复”的 KCS 产品流程。压缩仍是 M5 专题。</p>
+<h2 id="section-15">4. 两项旗舰共享哪些资产</h2>
+<h3 id="section-16">4.1 旗舰 A：可解释的模型与能力塑造</h3>
+<p>保留三种角色明确的模型：手写教学模型、从零训练的研究模型、开放权重迁移模型。前两者可以共用实现；第三者用于检查尺度和真实模型行为。</p>
+<p>教学模型先采用 byte 编码，消除词表训练与外部下载的先修依赖；U01 单独实现小型 BPE 并比较编码效率。后续预训练再选定 tokenizer。Tokenizer 改变后，重新建立 token 预算和评价口径，不复用原来的 perplexity 排名。</p>
+<p>任务资产使用公开可用数据或全新生成环境，分为：</p>
+<ul>
+<li>建模语料：检验 next-token 学习与数据配比。</li>
+<li>可验证任务：受限算术、字符串变换、小型状态机或可执行程序；每题有独立结果判定。</li>
+<li>迁移任务：留出的长度、组合、模板家族或不同语料来源。</li>
+</ul>
+<p>样本、生成器和切分规则都冻结版本。模板变体与共享来源分组切分；使用新 seed 不保证任务分布独立。</p>
+<h3 id="section-17">4.2 旗舰 B：模型服务与资源约束</h3>
+<p>先写最小 runner，建立正确性基线；再接真实引擎。手写模型接入真实引擎前，需要验证架构配置、权重映射、tokenizer 与 logits 等价；适配器尚未完成时，明确使用另一个受支持模型开展引擎实验。</p>
+<p>共同负载定义建议从 3 × 3 小矩阵开始：短/中/长输入 × 单请求/中并发/高负载。实际 token 档位与到达率由 U07 的容量预实验确定。比较缓存时另加重复前缀与无共享前缀两组；量化校准集与质量测试集分离。</p>
+<p>同时记录服务层的 TTFT、TPOT、延迟分布、token 吞吐和任务层的质量、完成时间与总成本。TPOT 的定义、流式 chunk 与 token 的关系、是否含排队必须写清。样本不足时展示原始分布，不报有误导性的 p99。</p>
+<h3 id="section-18">4.3 联合研究如何避免混杂</h3>
+<p>先固定权重研究系统，再固定系统研究训练；两边分别完成后做交叉实验。若同时修改模型、量化、提示与调度，必须增加必要消融，不能只凭最终分数给某个机制归功。</p>
+<p>图片分支另保留源图哈希、源图组、processor 版本、处理尺寸、视觉 token 与图文配对记录。图片真值与模型输入隔离，模型修改后同时检查文字能力。</p>
+<p>训练数据、任务环境、模型快照、服务配置和评价器使用相互关联的版本标识。原始日志与失败候选保留；实验集一旦用于反复选方案，就标为开发集。</p>
+<h2 id="section-19">5. 九模块的 L3 关卡与 L4 研究卡</h2>
+<p>每个模块都提交独立证据，不用旗舰总成绩抵扣。L4 从前期开始记录问题；下表是待文献核对的研究候选，尚未声称具有新颖性。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>L3 验收门槛</th>
+<th>一张 L4 研究卡的最小对照</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>小模型正确；受控架构改变；解释失败与长度迁移</td>
+<td>在相同训练 token 且报告 FLOPs/设备时间下，比较 KV 头数与长度泛化，检查容量变化是否解释结果</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>预训练、验证轨迹、SFT/蒸馏、一种偏好/奖励更新；退化分析</td>
+<td>学生失败驱动选数 vs 等教师成本固定选数；留出新任务族</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>生成、覆盖与部署选择器贡献分开；预算匹配</td>
+<td>固定计算 vs 按可观察不确定性分配；加入验证器相关错误</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>真实引擎路径、容量模型、缓存/调度干预、量化和真实传输</td>
+<td>在质量/时限约束下联合改变精度或调度；更换负载验证预测</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>多种压缩、检索与状态恢复对照；明确丢失的信息</td>
+<td>原目标选择 vs 可恢复索引；在目标突变与重复恢复下检验</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>运行状态与外部结果一致；故障恢复和执行边界</td>
+<td>两种状态提交协议在副作用边界中断；计量重复动作与人工补救</td>
+</tr>
+<tr>
+<td>M7</td>
+<td>单体/工作流/协作及预算对照；负收益场景</td>
+<td>任务结构驱动分工 vs 固定分工；在新依赖图与共因错误下迁移</td>
+</tr>
+<tr>
+<td>M8</td>
+<td>独立复核；处理择优、相关样本和评价者偏差</td>
+<td>自适应反复反馈 vs 分阶段留出；用独立审计测“进步”偏差</td>
+</tr>
+<tr>
+<td>M9</td>
+<td>预测日志、人工贡献、个人答辩、延后迁移</td>
+<td>先预测再协助 vs 直接协助；检验无 AI 的新题与延后保持</td>
+</tr>
+</tbody>
+</table></div>
+<p>每张卡写清：现有文献做到哪里、自己的区别、能否否证、独立变量、基线、资源上限、主要指标、迁移条件、停止标准。文献差距不足时回归 L3 复现；可信阴性结果可形成 L4 贡献。</p>
+<h2 id="section-20">6. 首轮推进与工作量校准</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>关卡</th>
+<th>进入条件</th>
+<th>本轮要拿到的具体证据</th>
+<th>出口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S0</td>
+<td>能运行 Python，理解 PyTorch 张量基本操作</td>
+<td>环境报告、概率/梯度诊断、任务链路图与预注册</td>
+<td>确定先修补课项与单卡实验环境</td>
+</tr>
+<tr>
+<td>S1a</td>
+<td>U01 概率、标签与切分正确</td>
+<td>decoder 前向、mask 负例、小样本过拟合、缓存核对</td>
+<td>获得可解释、可继续扩展的研究对象</td>
+</tr>
+<tr>
+<td>S1b</td>
+<td>训练恢复与指标可重放</td>
+<td>首轮架构/数据干预、失败案例、训练内存账</td>
+<td>进入真实引擎与质量—成本实验</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>两项旗舰都有稳定基线</td>
+<td>模型/精度/推理预算/负载的受控证据</td>
+<td>M1—M4 的 L3 与研究卡</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>运行时能保存可验证状态</td>
+<td>M5—M9 的独立研究证据与迁移</td>
+<td>九模块 L3 台账</td>
+</tr>
+<tr>
+<td>S4/S5</td>
+<td>评测和预算可由程序固定</td>
+<td>E10 继承对照、逐模块研究结论、试教反馈</td>
+<td>形成可授课版本与实际工作量</td>
+</tr>
+</tbody>
+</table></div>
+<p>第一单元先遵循手算、少量张量运算、单头注意力、decoder block、完整小模型的递进路线。现有探针是可选参考，逐行读码后置到具备对应概念时。U00—U03 可按四次研讨加自主实践开始。暂估研讨每次 90—120 分钟、自主实践合计 10—20 小时，仅作为安排起点；这是设计估计，尚未经试教或运行验证。遇到先修缺口按诊断补课，不靠加快术语讲解赶进度。</p>
+<h2 id="section-21">7. 每次课的固定教学结构</h2>
+<ol>
+<li>**先预测：**给一个有歧义的现象，记录解释、数量级和信心。</li>
+<li>**重建机制：**推导关键计算，跟踪张量或状态；标出假设。</li>
+<li>**读原始证据：**看论文中的一个关键实验或库中的一条执行路径。</li>
+<li>**做区分性实验：**用基线、单因素干预与故障负例区分解释。</li>
+<li>**换条件：**换长度、任务、模型或负载，检查解释还能否成立。</li>
+<li>**独立答辩：**关闭 AI 帮助，解释一段实现或诊断新故障。</li>
+<li>**沉淀教学卡：**记录可复现步骤、失败案例与下一问题。</li>
+</ol>
+<p>允许 AI 参与实现、推导讨论和文献梳理；个人必须能核对来源，解释代码，并在陌生条件下重新判断。运行成功、答案流畅和研究结论可信分别验收。</p>
+<h3 id="section-22">历史案例的插入位置（2026-09-19）</h3>
+<p>每个案例围绕“当时的瓶颈 → 新机制 → 代价与适用范围 → 可手算或缩小复现的对照”组织。展示技术分叉和并存，不要求先阅读大量论文或完整代码。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>位置</th>
+<th>案例线索</th>
+<th>要形成的判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U02</td>
+<td>早期序列模型中的注意力、原始 Transformer、BERT 与自回归 decoder</td>
+<td>信息流与学习目标怎样共同变化；注意力不是无条件全文访问</td>
+</tr>
+<tr>
+<td>U05/U08</td>
+<td>MHA/MQA/GQA；普通注意力与 FlashAttention；KV 分配与 PagedAttention</td>
+<td>区分架构改变、精确计算的 IO 优化与状态内存管理</td>
+</tr>
+<tr>
+<td>U10/U19</td>
+<td>普通自回归解码、推测解码与 Medusa；LLaDA 等不同生成分支</td>
+<td>分清候选验证、减少目标模型调用与改变生成/学习目标</td>
+</tr>
+<tr>
+<td>V02/V03</td>
+<td>CLIP 的图文对齐与 LLaVA 的视觉指令连接路线</td>
+<td>对齐表示与条件生成分别解决什么问题</td>
+</tr>
+</tbody>
+</table></div>
+<p>案例逐个在先修概念具备后展开，性能数字限定在原论文的实验条件中；亲手复现先验证机制，再讨论规模与硬件迁移。</p>
+<h2 id="section-23">8. 文献与版本管理</h2>
+<p>阅读采用“每单元一篇主材料 + 必要实现入口”，其余放延伸阅读，避免以阅读数量代替掌握。下列来源用于课程设计与机制核对，不复制其完整课程或作业。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>来源</th>
+<th>进入单元</th>
+<th>阅读任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://cs336.stanford.edu/">Stanford CS336</a></td>
+<td>U01—U06</td>
+<td>参考从模型、数据到系统的学习组织，比较本课程先修与实验规模</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></td>
+<td>U02—U03</td>
+<td>按<a href="Attention-Is-All-You-Need-%E4%BC%B4%E8%AF%BB-v0.1.md">分轮伴读</a>覆盖全文，连接手算、实现、历史问题与证据；辨认课程选择与原文架构差异</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2305.13245">GQA</a></td>
+<td>U05/U08</td>
+<td>追踪 query 头与 KV 头的分组关系及其质量/状态权衡</td>
+</tr>
+<tr>
+<td><a href="https://arxiv.org/abs/2309.06180">PagedAttention</a></td>
+<td>U08—U10</td>
+<td>区分缓存内存管理与注意力数值近似</td>
+</tr>
+<tr>
+<td><a href="https://docs.vllm.ai/en/stable/features/quantization/">vLLM 量化文档</a></td>
+<td>U11—U13</td>
+<td>逐项核对硬件、格式与实现支持；锁定源码 revision 后追踪 dispatch</td>
+</tr>
+<tr>
+<td><a href="https://developer.nvidia.com/blog/introducing-nvfp4-for-efficient-and-accurate-low-precision-inference/">NVIDIA NVFP4</a></td>
+<td>U11/U12</td>
+<td>区分数值、scale、存储开销与原生硬件执行</td>
+</tr>
+<tr>
+<td><a href="%E5%9F%B9%E5%85%BB%E7%9B%AE%E6%A0%87%E4%B8%8E%E8%83%BD%E5%8A%9B%E6%A0%87%E5%87%86-v0.4.md">能力标准 v0.4 的模块阅读入口</a></td>
+<td>U15—U33</td>
+<td>后训练、Agent、认知和 RSI 原始来源逐单元再核验版本与贡献</td>
+</tr>
+</tbody>
+</table></div>
+<p>本轮重新打开并核对了前六项网页（2026-09-18）。后续模块沿用 v0.3 的阅读线索，实施时再核验论文版本与代码；不把路线图当作新的全面文献综述。</p>
+<h2 id="section-24">9. 本版完成到哪里</h2>
+<p>已完成：整体顺序、40 个单元（34 个基础单元加 6 个图片单元）、九模块独立研究卡、4090 资源分层、第一单元教案与验收、E13 图片输入实验设计、环境采集脚本和实验报告模板。</p>
+<p>仍待实施：教学模型与训练代码、GPU 张量运算验证、引擎安装及兼容性测试、量化内核测量、正式数据选择、研究实验与试教。当前系统 Python 未检测到 PyTorch；这个观察只覆盖该解释器。</p>
+<p><strong>下一项实际工作：执行 U00 诊断并建立独立的课程运行环境，然后按 U01—U03 完成第一条可测量的模型链路。</strong></p>
+
+<div class="footer">本阅读版由同名 Markdown 源文档生成。实验状态以源文档标注为准；前沿资料和工具行为需按版本核验。</div>
+</main>
+</div>
+</body>
+</html>
