@@ -26,7 +26,7 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 </head>
 <body>
 <main id="transformer-residual-map">
-<div class="topline">LLM 智能体的原理、系统与协作 · 课件 02 · 2026-09-20</div>
+<div class="topline">LLM 智能体的原理、系统与协作 · 课件 02 · 2026-09-21</div>
 <h1>Transformer：把架构图对齐到每一步计算</h1>
 <p>每个计算框都包含<strong>模块名称、公式和作用</strong>。先在原论文架构中定位，再放大我们正在学习的注意力 → 残差相加 → LayerNorm。</p>
 <nav class="actions" aria-label="课程链接">
@@ -100,12 +100,32 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <div class="formula" data-math="add"></div><div class="formula" data-math="addExample"></div>
 <p class="purpose">旁路提供原来的 h<sub>i</sub>；主路提供 u<sub>i</sub>。两者必须有相同的分量数。相加会改变数值，不表示原信息在后续计算中永远保持不变。</p></div></div>
 <div class="step"><div class="step-num">6</div><div><h3>Norm：对同一位置的特征归一化，再缩放与平移</h3>
-<p class="subtle">下一次课程会逐项讲解。这里先给完整公式，方便对照图中的 Norm。</p>
+<p class="subtle">把由输入计算的统计量、减均值并缩放、可学习变换这三件事分开看。</p>
 <div class="equations"><div class="formula" data-math="mean"></div><div class="formula" data-math="variance"></div></div>
 <div class="formula" data-math="layernorm"></div>
 <p class="purpose">μ<sub>i</sub> 与 σ<sub>i</sub><sup>2</sup> 是由位置 i 的 d 个分量计算出的标量；k 是分量编号。每个分量都减去同一个 μ<sub>i</sub>，再除以同一个标准差项。γ、β 是 d 维可训练向量，⊙ 表示逐分量乘法，ε 是防止分母为零的小正数。</p>
 <div class="example"><strong>本例：</strong>相加结果为 (6, 2)，均值 μ = 4，方差 σ² = 4。若选择 γ = (1, 1)、β = (0, 0)、ε = 10<sup>−5</sup>，则归一化后的输出约为 (1, −1)。这是指定参数下的示例，不代表所有 LayerNorm 都产生该结果。</div>
 <p>若 u<sub>i</sub> 是零向量，<strong>Add 之后</strong>仍是 h<sub>i</sub>；<strong>Norm 之后</strong>通常仍会发生变化。</p></div></div>
+<article id="normalization-design">
+<h2>为什么有些地方做归一化，有些地方不做？</h2>
+<p>LayerNorm 的标准化部分包含<strong>减去均值和除以标准差项</strong>；求均值、方差是前面的准备计算。完整模块还包含 γ、β 的逐分量变换。给定标准化结果 (1, −1)，选择 γ = (2, 0.5)、β = (0, 1)，最终得到 (2, 0.5)，均值是 1.25。这道小题检查的是能否区分“标准化后的中间向量”和“完整模块的输出”。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>操作</th><th>作用对象与范围</th><th>想解决的问题</th></tr></thead><tbody>
+<tr><td>注意力分数除以 √d<sub>k</sub></td><td>每个 Q/K 点积分数；使用与维度有关的固定系数。</td><td>在常用统计假设下，抵消点积典型尺度随维度增长的影响。它不按本轮数据减均值，也不把一组数变为概率。</td></tr>
+<tr><td>注意力 softmax</td><td>同一个 query 对所有来源位置的分数。</td><td>构造非负、和为 1 的相对读取权重。</td></tr>
+<tr><td>词表 softmax</td><td>同一预测位置对所有词表候选的 logits。</td><td>构造可用于预测与损失计算的候选概率分布。</td></tr>
+<tr><td>LayerNorm</td><td>一个位置的特征分量；每个位置计算自己的统计量。</td><td>减少该向量整体偏移与尺度波动对后续计算的影响，再用 γ、β 学习特征的尺度与偏移。</td></tr>
+</tbody></table></div>
+<h3>动机：前面一层的尺度变化，会改变后面一层的工作方式</h3>
+<p>用不含投影偏置的自注意力作局部分析：如果整段输入 H 都放大 10 倍，那么 Q、K 各放大 10 倍，QKᵀ 就放大 100 倍。即使 d<sub>k</sub> 没变，softmax 所见的分数差距也会放大。原本只是表示的整体尺度变了，后续读取方式却可能大变；梯度与参数更新的数值尺度也会受到影响。</p>
+<p>LayerNorm 提供了一种控制这种敏感性的办法。它的去均值部分消除整体平移的影响；忽略 ε 时，对非零方差向量的整体正数缩放也保持不变。实际 ε 非零时，后一性质通常是近似的。训练收益还取决于放置位置、初始化和优化器，不能只看某个归一化后的向量就断言有效。</p>
+<h3>为什么标准化后还要 γ、β？</h3>
+<p>均值、方差随当前输入改变；γ、β 是同一模块对各位置共享的可训练参数。前者整理每次输入的中心与尺度，后者让模型学习一套特征变换。γ、β 不会自动恢复每个输入被去掉的均值或尺度。</p>
+<h3>代价：归一化会改变信息，不应随处添加</h3>
+<p>例如两个词表 logit 向量 (2, 1, 0) 和 (20, 10, 0)：直接 softmax 时，最高分候选的概率分别约为 66.5% 和 99.995%，表达了不同的概率集中程度。若先对两者做 LayerNorm，暂忽略 ε 且使用相同 γ、β，它们会变成相同的向量，这种差异就消失了。这个例子讨论的是<strong>在词表 logits 上另加 LayerNorm</strong>；模型已有的隐藏表示归一化是另一处操作。</p>
+<p>工程上先明确要解决什么：数值中心、尺度、概率约束，还是其它问题；再检查统计范围和被去掉的信息。例如，自回归模型若跨未来位置统计，可能引入新的信息泄漏通路。最后用受控实验比较训练稳定性、验证效果、实测速度和显存，并给不同结构合理的调参机会。</p>
+<p>后续案例：<a href="https://arxiv.org/abs/1910.07467" target="_blank" rel="noreferrer">RMSNorm（2019）</a>检验去掉“减均值”、仅使用均方根缩放的方案；<a href="https://proceedings.mlr.press/v119/xiong20b.html" target="_blank" rel="noreferrer">Pre-LN / Post-LN 分析（2020）</a>研究同一归一化操作放在不同位置时对梯度与训练的影响。它们用于讨论可检验的结构选择，不作为任一配置在所有任务上更好的保证。</p>
+</article>
 </section>
 
 <details><summary>符号速查：哪些是参数，哪些是本次计算的结果？</summary>
@@ -216,7 +236,7 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
     wire(svg,'M '+X+' 864 H '+side+' V 380 H '+(X+NW/2));el('circle',{cx:X,cy:864,r:3,fill:'var(--wire)'},svg);
     box(svg,X,684,NW,272,'多头注意力 · 含输出投影',[forms.head,forms.concat,forms.projection],'每头读取 → 拼接 → 用 W_O 组合<br>Q 来自位置 i，K/V 来自可见来源 j');
     box(svg,X,380,NW,106,'Add · 残差相加',[forms.add],'同一位置的对应分量相加','focus');
-    box(svg,X,160,NW,190,'LayerNorm · 下一步逐项讲',[eq(hp,call('LN',ti)),eq(hp,norm)],'按本位置的特征求均值与方差<br>再逐分量缩放与平移','pending');
+    box(svg,X,160,NW,190,'LayerNorm · 中心与尺度',[eq(hp,call('LN',ti)),eq(hp,norm)],'按本位置的特征求均值与方差<br>再逐分量缩放与平移','pending');
     content(svg,side-185,602,170,126,'<div class="node-title">恒等旁路</div>'+math(eq(sub(v('skip'),v('i')),hi))+'<div class="node-purpose">直接传递本层输入<br>本例：(1, 3)</div>');
     mathLabel(svg,X,910,NW,eq(hi,vec([1,3])));
     mathLabel(svg,X,503,NW,eq(ui,vec([5,-1])));
