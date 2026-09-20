@@ -20,7 +20,7 @@
 ## 可交互课件
 
 - [课件 01：注意力符号与手算](docs/lessons/attention-symbols-01.html)：以数学排版和可调计算区分 r/s/a、单个贡献与汇合结果，并核对参数更新量。
-- [课件 02：Transformer 架构与残差连接](docs/lessons/transformer-residual-map.html)：在原论文架构示意图与 Add & Norm 的局部计算之间切换，观察注意力分支与旁路怎样相加。
+- [课件 02：Transformer 架构、公式与残差连接](docs/lessons/transformer-residual-map.html)：在架构图与局部放大之间切换；每个框标出公式和作用，并配有 Q/K/V、读取权重、输出投影、残差相加及 LayerNorm 的符号说明和手算例子。
 
 ## 学习回顾
 
