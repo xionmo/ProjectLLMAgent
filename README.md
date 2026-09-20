@@ -20,7 +20,7 @@
 ## 可交互课件
 
 - [课件 01：注意力符号与手算](docs/lessons/attention-symbols-01.html)：以数学排版和可调计算区分 r/s/a、单个贡献与汇合结果，并核对参数更新量。
-- [课件 02：Transformer 架构、公式与残差连接](docs/lessons/transformer-residual-map.html)：在架构图与局部放大之间切换；每个框标出公式和作用，并配有 Q/K/V、读取权重、输出投影、残差相加及 LayerNorm 的符号说明和手算例子。
+- [课件 02：Transformer 翻页版（24 页）](docs/lessons/transformer-slides.html) · [详细参考](docs/lessons/transformer-residual-map.html)：按固定主题回顾注意力、残差、LayerNorm、完整 Encoder 层与交叉注意力；支持目录、键盘翻页、阅读位置保存和打印。
 
 ## 学习回顾
 
@@ -66,3 +66,5 @@ python3 scripts/render_document.py docs/课程实施方案-v0.1.md docs/第一�
 ```
 
 交互课件位于 docs/lessons/，其 HTML 是直接维护的源文件，不用上述静态 Markdown 渲染器覆盖。静态教案与阶段回顾仍从 Markdown 生成阅读版。
+
+翻页课件保留已经发布的主题页、页面 ID 与页序。新增知识按主题追加页面；课程推进通过切换阅读位置完成，不把旧页替换成新的讲解内容。必要的勘误在原主题页修正，详细推导保留在配套参考页。

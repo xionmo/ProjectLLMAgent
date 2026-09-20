@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="可翻页的 Transformer 复习课件：注意力、残差、LayerNorm、完整 Encoder 层与交叉注意力。">
+<title>Transformer · 翻页课件</title>
+<style>
+:root{color-scheme:light;--paper:#fff;--bg:#edf2f2;--ink:#21313b;--muted:#596d73;--accent:#176b70;--line:#d7e3e4;--wash:#edf7f5;--blue:#eaf1fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC",sans-serif;line-height:1.55}button,a,input,summary{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer;border:1px solid #abc3c5;background:var(--paper);color:var(--accent);padding:7px 12px;border-radius:6px}button:disabled{opacity:.4;cursor:default}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #75afb2;outline-offset:3px}a{color:var(--accent);text-underline-offset:3px}button.primary{background:var(--accent);color:white;border-color:var(--accent)}
+.topbar,.bottom{max-width:1220px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px}.topbar{font-size:14px;flex-wrap:wrap}.brand{font-size:18px;font-weight:600}.tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.tools a{font-size:14px}.deck{max-width:1220px;margin:auto;padding:0 4px}.slide{background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 30px #21313b08;height:clamp(560px,calc(100dvh - 166px),820px);padding:28px 38px;overflow:auto;display:flex;flex-direction:column;font-size:20px}.slide[hidden]{display:none!important}.meta{display:flex;justify-content:space-between;gap:12px;color:var(--accent);font-size:13px;letter-spacing:.02em;margin-bottom:12px}.slide h1,.slide h2{font-size:32px;line-height:1.35;margin:0 0 12px;font-weight:600}.slide h3{font-size:21px;margin:0 0 10px}.slide p{margin:0 0 14px}.lead{color:var(--muted);font-size:19px}.small{font-size:15px;color:var(--muted)}.slide ul,.slide ol{margin:8px 0;padding-left:1.3em}.slide li{margin:7px 0}.columns{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}.columns.diagram-layout{grid-template-columns:1.45fr 1fr;gap:22px}.panel{padding:18px 20px;border:1px solid var(--line);border-radius:8px;min-width:0}.panel.soft{background:var(--wash)}.key{border-left:4px solid var(--accent);background:var(--wash);padding:12px 17px;margin:16px 0;font-size:19px}.key p:last-child{margin-bottom:0}.spacer{flex:1;min-height:8px}.source{font-size:13px;color:var(--muted);margin-top:auto;padding-top:12px}.source a{color:inherit}.math{padding:9px 3px;overflow-x:auto;margin:9px 0;max-width:100%}math{font-family:"Cambria Math","STIX Two Math",math;font-size:27px}math[display="block"]{margin:0}.compact math{font-size:23px}.math-row{display:flex;gap:24px;flex-wrap:wrap;align-items:center}.math-row .math{max-width:100%}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:18px}th,td{text-align:left;vertical-align:middle;padding:10px 12px;border-bottom:1px solid var(--line)}th{background:var(--wash);font-weight:600}.dense td,.dense th{padding:8px 10px;font-size:17px}.steps{display:grid;gap:13px}.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start}.step>span:first-child{color:var(--accent);font-weight:600}.flow{display:flex;align-items:stretch;gap:10px;margin:15px 0}.flow .box{flex:1;border:1px solid var(--line);border-radius:7px;padding:13px 11px;text-align:center;min-width:0;background:var(--wash)}.flow .arrow{align-self:center;color:var(--muted)}.flow.vertical{flex-direction:column;gap:7px}.flow.vertical .arrow{line-height:1}.flow .small{display:block;margin-top:7px}.flow .math{margin:3px 0}.flow math{font-size:23px}.mask{min-width:360px;text-align:center}.mask th,.mask td{text-align:center}.allow{background:var(--wash)}.block{background:#f4eeee;color:#775452}.attention-grid{table-layout:fixed;text-align:center;min-width:440px}.attention-grid td,.attention-grid th{text-align:center}.attention-grid tbody tr:nth-child(2){background:var(--wash)}.diagram{min-width:0}.diagram svg{display:block;width:100%;max-height:470px}.diagram text{font-family:"Microsoft YaHei",sans-serif}.diagram .node{fill:var(--wash);stroke:#b9cdce;stroke-width:1}.diagram .focus{fill:#d8efea;stroke:var(--accent);stroke-width:1.7}.diagram .wire{fill:none;stroke:#72878d;stroke-width:1.3}.diagram .frame{fill:none;stroke:var(--line);stroke-width:1}.cover-route{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}.cover-route a{display:block;padding:16px 18px;text-decoration:none;border:1px solid var(--line);border-radius:8px;background:var(--wash)}.cover-route strong{display:block;font-size:20px}.cover-route span{display:block;font-size:15px;color:var(--muted);margin-top:5px}.review{border:1px solid var(--line);border-radius:7px;padding:12px 16px;margin:10px 0;font-size:18px}.review summary{cursor:pointer;font-weight:600}.review p{margin:10px 0 0;font-size:17px}.bottom{font-size:14px;flex-wrap:wrap}.bottom .buttons{display:flex;gap:10px}.page-status{min-width:180px;color:var(--muted)}.keyboard{color:var(--muted);font-size:13px}kbd{font:inherit;padding:1px 4px;border:1px solid var(--line);border-radius:3px;background:var(--paper)}.progress{height:3px;background:#dbe7e7}.progress>div{height:100%;background:var(--accent);width:0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+dialog{width:min(760px,94vw);max-height:86dvh;border:1px solid var(--line);border-radius:12px;padding:22px;color:var(--ink);background:var(--paper)}dialog::backdrop{background:#16303866}.dialog-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}.dialog-head h2{font-size:23px;margin:0}.toc-groups{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px}.toc-groups h3{font-size:15px;color:var(--muted);margin:8px 0}.toc-groups a{display:flex;gap:10px;padding:7px 9px;text-decoration:none;border-radius:5px;font-size:15px}.toc-groups a[aria-current="page"]{background:var(--wash);font-weight:600}.toc-groups .ordinal{width:22px;color:var(--muted);flex:none}.sr-status{font-size:13px;color:var(--muted)}
+.columns>*{min-width:0}
+.diagram svg{max-height:min(470px,calc(100dvh - 356px))}
+@media(max-width:1250px){.topbar,.bottom{padding-left:16px;padding-right:16px}.deck{padding:0 12px}.slide{padding:26px 30px}}
+@media(max-width:900px){.slide{font-size:18px}.slide h2,.slide h1{font-size:28px}.lead{font-size:18px}.columns{gap:16px}.columns.diagram-layout{grid-template-columns:1.2fr 1fr}math{font-size:24px}.panel{padding:14px}.key{font-size:18px}.table-wrap table{font-size:16px}.keyboard{display:none}}
+@media(max-width:700px){.topbar{padding:10px 12px}.brand{font-size:16px}.tools{gap:6px}.tools button,.tools a{font-size:13px}.deck{padding:0 8px}.slide{height:auto;min-height:calc(100dvh - 205px);overflow:visible;padding:22px 18px;font-size:18px}.slide h1,.slide h2{font-size:26px}.columns,.columns.diagram-layout{grid-template-columns:1fr}.flow{flex-direction:column;gap:5px}.flow .arrow{transform:rotate(90deg)}.flow.vertical .arrow{transform:none}.cover-route{grid-template-columns:1fr}.meta{font-size:12px}.diagram.architecture{overflow-x:auto}.diagram.architecture svg{min-width:570px;max-height:none}.bottom{position:sticky;bottom:0;background:var(--bg);z-index:2;padding:10px 12px}.page-status{min-width:0}.toc-groups{grid-template-columns:1fr}.source{margin-top:10px}.tools .reference{display:none}}
+@media print{@page{size:A4 landscape;margin:8mm}body{background:white}.topbar,.bottom,.progress,dialog,.sr-status{display:none!important}.deck{max-width:none;padding:0}.slide,.slide[hidden]{display:flex!important;width:100%;height:185mm;min-height:0;overflow:hidden;border:0;border-radius:0;box-shadow:none;padding:6mm 8mm;break-after:page;page-break-after:always;font-size:16px}.slide:last-child{break-after:auto;page-break-after:auto}.slide h2,.slide h1{font-size:28px}.lead{font-size:17px}.source,.small{font-size:13px}.columns{grid-template-columns:1fr 1fr}.columns.diagram-layout{grid-template-columns:1.35fr 1fr}.flow{flex-direction:row}.flow.vertical{flex-direction:column}.flow .arrow{transform:none}.cover-route{grid-template-columns:1fr 1fr}math{font-size:23px}.compact math{font-size:21px}.diagram svg{max-height:138mm}.review p{font-size:15px}.review[open] p{display:block}.meta{margin-bottom:8px}.key{font-size:17px;margin:10px 0}.panel{padding:12px 16px}.table-wrap{overflow:visible}.table-wrap table{font-size:16px}.dense td,.dense th{font-size:15px}.attention-grid,.mask{min-width:0}}
+</style>
+</head>
+<body>
+<header class="topbar">
+<div class="brand">Transformer · 翻页课件</div>
+<nav class="tools" aria-label="课件工具">
+<button id="open-toc" type="button" aria-haspopup="dialog">目录</button>
+<a href="#encoder-route" data-jump="encoder-route">Encoder 章节</a>
+<a class="reference" href="transformer-residual-map.html" target="_blank" rel="noreferrer">详细参考</a>
+<button id="fullscreen" type="button">全屏</button>
+<button id="print-deck" type="button">打印 / PDF</button>
+</nav>
+</header>
+<div class="progress" role="progressbar" aria-label="阅读进度" aria-valuemin="1" aria-valuemax="24" aria-valuenow="1"><div id="progress-fill"></div></div>
+<main class="deck" id="transformer-deck">
+<!-- Each slide has a stable topic id. Append new topics; do not replace an old page with the latest lesson. -->
+<section class="slide" id="overview" data-chapter="导览" aria-roledescription="幻灯片">
+<h1>从注意力，到一个完整的 Encoder</h1>
+<p class="lead">一页一个重点：公式、符号和作用一起看。页面保留固定主题，便于回顾。</p>
+<div class="cover-route">
+<a href="#symbols" data-jump="symbols"><strong>注意力怎样读取信息</strong><span>第 3–9 页 · Q/K/V、权重、多头与输出投影</span></a>
+<a href="#residual" data-jump="residual"><strong>残差与归一化</strong><span>第 10–14 页 · Add、LayerNorm 与设计取舍</span></a>
+<a href="#encoder-route" data-jump="encoder-route"><strong>把 Encoder 层走完整</strong><span>第 15–20 页 · FFN、第二个 Add & Norm、堆叠</span></a>
+<a href="#cross-sources" data-jump="cross-sources"><strong>再连接到 Decoder</strong><span>第 21–23 页 · 交叉注意力与可见性</span></a>
+</div>
+<div class="key">阅读顺序：先明确输入是什么，再看变换和输出，最后判断这一步解决什么问题。</div>
+<p class="small">用左右方向键翻页；目录可跳转。会记住上次阅读位置，每页地址也可直接保存。数学公式与示意图离线可用。</p>
+<div class="source">课程：LLM 智能体的原理、系统与协作 · 基于原论文 encoder–decoder / post-LN 结构。</div>
+</section>
+
+<section class="slide" id="architecture" data-chapter="导览" hidden aria-roledescription="幻灯片">
+<h2>图 1：我们在结构中的什么位置？</h2>
+<div class="columns diagram-layout">
+<div class="diagram architecture" data-diagram="architecture"></div>
+<div>
+<p>左边编码给定的源输入；右边逐步生成目标序列。</p>
+<div class="key">Encoder 的一层包含四步：<br>自注意力 → Add & Norm → FFN → Add & Norm。</div>
+<p>完成 N 层之后，才得到最终上下文 <strong>C</strong>。</p>
+<p class="small">原论文 N = 6，各层分别学习参数。图中合并绘制词嵌入与位置相加，省略 dropout。</p>
+<a href="transformer-residual-map.html" target="_blank" rel="noreferrer">打开含详细公式的完整架构图</a>
+</div></div>
+<div class="source"><a href="https://arxiv.org/html/1706.03762v7#S3.SS1" target="_blank" rel="noreferrer">Attention Is All You Need · §3.1</a></div>
+</section>
+
+<section class="slide" id="symbols" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>先分清：向量、分数、权重、读取结果</h2>
+<div class="table-wrap"><table class="dense"><thead><tr><th>符号</th><th>对象</th><th>计算角色</th></tr></thead><tbody>
+<tr><td>qᵢ</td><td>dₖ 维向量</td><td>当前位置用什么特征来查询？</td></tr>
+<tr><td>kⱼ</td><td>dₖ 维向量</td><td>来源位置提供什么匹配特征？</td></tr>
+<tr><td>rᵢⱼ、sᵢⱼ</td><td>标量</td><td>原始点积分数、缩放后的分数。</td></tr>
+<tr><td>aᵢⱼ</td><td>标量</td><td>给来源 j 的混合系数。</td></tr>
+<tr><td>vⱼ</td><td>dᵥ 维向量</td><td>实际被读取的内容。</td></tr>
+<tr><td>oᵢ</td><td>dᵥ 维向量</td><td>汇总所有来源贡献后的读取结果。</td></tr>
+</tbody></table></div>
+<p class="small">i 是查询位置，j 是来源位置；上标 (b) 表示头编号。这些角色类比不要求向量各维都对应一个可命名的语义。</p>
+<div class="source"><a href="attention-symbols-01.html" target="_blank" rel="noreferrer">配套交互：注意力符号与手算</a></div>
+</section>
+
+<section class="slide" id="qkv" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>Q、K、V 从当前表示中投影出来</h2>
+<div class="math-row"><div class="math compact" data-math="query"></div><div class="math compact" data-math="key"></div><div class="math compact" data-math="value"></div></div>
+<div class="columns">
+<div class="panel"><h3>本次计算的结果</h3><p>hᵢ 是进入当前子层时已有的表示；q、k、v 是由它和投影参数计算出的向量。</p><div class="math" data-math="qProjectionExample"></div></div>
+<div class="panel soft"><h3>参数怎样共享？</h3><p>同一个头在不同 token 位置共享 W。</p><p>不同头各有自己的投影参数。</p><p class="small">采用行向量乘矩阵：W 的行对应输入特征，列对应输出特征。</p></div>
+</div>
+<div class="key">hᵢW 在一个位置内部组合特征；后面的注意力加权才会汇合不同位置的信息。</div>
+</section>
+
+<section class="slide" id="scores" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>原始分数 → 缩放 → 遮罩 → 权重</h2>
+<div class="math-row"><div class="math" data-math="raw"></div><div class="math" data-math="scaled"></div></div>
+<div class="math" data-math="weights"></div>
+<div class="columns">
+<div class="panel"><h3>为什么有 √dₖ？</h3><p>在常用统计假设下，点积的典型尺度随维度增长；这个系数补偿相应的尺度变化。</p></div>
+<div class="panel soft"><h3>softmax 沿哪里计算？</h3><p>固定查询位置 i，在一整行来源位置之间分配非负、和为 1 的权重。</p></div>
+</div>
+<p class="small">负分数仍可对应可见位置。分数是否负，与位置是否被 mask 禁止是两件事。</p>
+</section>
+
+<section class="slide" id="mask" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>因果遮罩规定信息从哪里可以流过来</h2>
+<div class="columns">
+<div class="table-wrap"><table class="mask"><thead><tr><th>查询 i / 来源 j</th><th>1</th><th>2</th><th>3</th></tr></thead><tbody>
+<tr><th>1</th><td class="allow">0</td><td class="block">−∞</td><td class="block">−∞</td></tr>
+<tr><th>2</th><td class="allow">0</td><td class="allow">0</td><td class="block">−∞</td></tr>
+<tr><th>3</th><td class="allow">0</td><td class="allow">0</td><td class="allow">0</td></tr>
+</tbody></table></div>
+<div><p>这里画的是<strong>加到分数上的 M</strong>。</p><p>0：保留该位置的原分数。</p><p>−∞：softmax 后该位置权重为 0。</p><p class="small">不是按 mask 的绝对值分配影响力。</p></div>
+</div>
+<div class="key">自回归目标序列：当前位置可以读过去和当前，不能通过这条通路读未来目标 token。</div>
+<p class="small">不同任务可以采用不同可见性规则。后面的交叉注意力需要重新判断哪些输入已经可用。</p>
+</section>
+
+<section class="slide" id="weighted-read" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>权重乘整个 Value，再对来源求和</h2>
+<div class="math" data-math="head"></div>
+<p>一个 aᵢⱼ 是一个数；aᵢⱼvⱼ 是来源 j 的贡献向量；把所有贡献相加，得到 oᵢ。</p>
+<div class="panel soft"><p>给定两个可见来源，权重分别为 0.25 和 0.75：</p><div class="math" data-math="weightedExample"></div></div>
+<div class="key">Q/K 决定匹配，V 提供内容。固定 Q、K 和 mask，单独改变 V，不会改变本次注意力权重。</div>
+<p class="small">oᵢ 的维度跟 V 一致。Q/K 的维度 dₖ 与 Value 的维度 dᵥ 不必相同。</p>
+</section>
+
+<section class="slide" id="multihead" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>多头：同一批输入，多套读取方式</h2>
+<div class="columns">
+<div class="panel"><h3>头 1</h3><p>W<sub>Q</sub><sup>(1)</sup>、W<sub>K</sub><sup>(1)</sup>、W<sub>V</sub><sup>(1)</sup></p><p>各自计算 Q/K/V、权重 A<sup>(1)</sup>、读取结果 O<sup>(1)</sup>。</p></div>
+<div class="panel soft"><h3>头 2</h3><p>W<sub>Q</sub><sup>(2)</sup>、W<sub>K</sub><sup>(2)</sup>、W<sub>V</sub><sup>(2)</sup></p><p>以另一套参数计算另一份权重和读取结果。</p></div>
+</div>
+<div class="math" data-math="concat"></div>
+<p>拼接保留同一位置各个头的结果，供后面的输出投影组合。</p>
+<p class="small">头的具体分工由训练形成，不需要预先指定“语法头”“指代头”。原论文采用等宽头；不等宽分配属于可研究的结构选择。</p>
+</section>
+
+<section class="slide" id="output-projection" data-chapter="注意力基础" hidden aria-roledescription="幻灯片">
+<h2>W<sub>O</sub>：组合各头读回来的特征</h2>
+<p class="lead">给定两个头的输出 (2, 0) 与 (0, 3)，拼接后是 4 维。</p>
+<div class="math" data-math="concatExample"></div>
+<div class="math" data-math="projectionExample"></div>
+<div class="key">输出 uᵢ 回到主干宽度。这一步组合的是同一位置的特征，参数不要求非负或和为 1。</div>
+<p class="small">本页 W<sub>O</sub> 是教学用参数；没有声称给定的两头输出来自一套已完整指定的 Q/K/V 数值。</p>
+</section>
+
+<section class="slide" id="residual" data-chapter="残差与归一化" hidden aria-roledescription="幻灯片">
+<h2>Add：保留输入的直接贡献，再加子层输出</h2>
+<div class="columns">
+<div class="flow vertical"><div class="box">输入 hᵢ = (1, 3)</div><div class="arrow">↓</div><div class="box">注意力 + W<sub>O</sub><br>uᵢ = (5, −1)</div><div class="arrow">↓</div><div class="box">与旁路传来的 hᵢ 相加</div></div>
+<div><div class="math" data-math="add"></div><div class="math" data-math="addExample"></div><p>两路宽度相同，才能逐分量相加。</p><p>子层可以学习对已有表示作怎样的调整。</p></div>
+</div>
+<div class="key">图中的 Add & Norm 还包含后面的 LayerNorm。相加结果不是整个框的最终输出。</div>
+</section>
+
+<section class="slide" id="layernorm-stats" data-chapter="残差与归一化" hidden aria-roledescription="幻灯片">
+<h2>LayerNorm：先对一个位置的特征做标准化</h2>
+<p class="lead">沿用相加结果 h̃ᵢ = (6, 2)，本例有两个特征分量。</p>
+<div class="columns">
+<div class="steps"><div class="step"><span>1</span><div>均值 μᵢ = (6 + 2) / 2 = 4</div></div><div class="step"><span>2</span><div>减均值，得到 (2, −2)</div></div><div class="step"><span>3</span><div>方差 σᵢ² = (2² + (−2)²) / 2 = 4</div></div><div class="step"><span>4</span><div>除以 √(4 + ε)，约为 (1, −1)</div></div></div>
+<div class="panel soft"><h3>统计范围</h3><p>每个 token 位置各算自己的均值与方差。</p><p>μ、σ² 是本次输入计算出的标量；不是一组可训练参数。</p><p class="small">ε 防止分母为零。二维例子不代表一般输出都在 [−1, 1] 内。</p></div>
+</div>
+<div class="key">这里的标准化包含“减均值 + 除标准差项”。</div>
+</section>
+
+<section class="slide" id="layernorm-affine" data-chapter="残差与归一化" hidden aria-roledescription="幻灯片">
+<h2>完整 LayerNorm 还会学习缩放和平移</h2>
+<div class="math" data-math="layernorm"></div>
+<div class="columns"><div class="panel"><h3>γ 与 β</h3><p>与输入同宽的可训练向量；分别逐分量缩放和平移。</p><p class="small">同一个模块在各位置共享参数，各位置的统计量仍各自计算。</p></div><div class="panel soft"><h3>代入后的意义</h3><div class="math compact" data-math="affineExample"></div><p>结果的均值约为 1.25。整个模块没有强制最终输出均值必须为 0。</p></div></div>
+<p class="small">γ、β 不会自动恢复每个输入被去掉的均值和整体尺度。</p>
+</section>
+
+<section class="slide" id="normalization-purpose" data-chapter="残差与归一化" hidden aria-roledescription="幻灯片">
+<h2>三个操作，三种目的</h2>
+<div class="table-wrap"><table><thead><tr><th>操作</th><th>作用范围</th><th>目的</th></tr></thead><tbody>
+<tr><td>除以 √dₖ</td><td>Q/K 点积分数</td><td>补偿维度对典型分数尺度的影响。</td></tr>
+<tr><td>softmax</td><td>一组来源分数或词表 logits</td><td>构造非负、和为 1 的权重或概率。</td></tr>
+<tr><td>LayerNorm</td><td>同一个位置的特征</td><td>整理中心与尺度，再学习缩放和平移。</td></tr>
+</tbody></table></div>
+<div class="key">没有投影偏置时，H 放大 10 倍，会使 Q、K 各放大 10 倍，点积分数放大 100 倍。</div>
+<p>表示的尺度变化可能显著改变后续读取方式。是否需要控制这种敏感性，要结合该位置的功能判断。</p>
+</section>
+
+<section class="slide" id="normalization-tradeoffs" data-chapter="残差与归一化" hidden aria-roledescription="幻灯片">
+<h2>归一化会改变信息，需要判断得失</h2>
+<div class="columns"><div class="panel"><h3>直接做词表 softmax</h3><p>logits：(2, 1, 0)<br>最高候选概率约 66.5%</p><p>logits：(20, 10, 0)<br>最高候选概率约 99.995%</p></div><div class="panel soft"><h3>如果先做 LayerNorm</h3><p>忽略 ε、使用相同 γ/β 时，两组正比例向量会变成相同的表示。</p><p>原来表达的概率集中程度差异消失了。</p></div></div>
+<div class="key">设计时明确：要解决的问题、统计范围、会移除的信息，以及实际训练和计算代价。</div>
+<div class="source">后续案例：<a href="https://arxiv.org/abs/1910.07467" target="_blank" rel="noreferrer">RMSNorm</a> · <a href="https://proceedings.mlr.press/v119/xiong20b.html" target="_blank" rel="noreferrer">Pre-LN / Post-LN</a></div>
+</section>
+
+<section class="slide" id="encoder-route" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>先走完左边：这四步合起来才是一层</h2>
+<div class="flow"><div class="box"><strong>自注意力</strong><span class="small">U<sub>E</sub> = MHA(H<sub>E</sub>)</span></div><div class="arrow">→</div><div class="box"><strong>Add & Norm</strong><span class="small">得到 Y<sub>E</sub></span></div><div class="arrow">→</div><div class="box"><strong>FFN</strong><span class="small">得到 F<sub>E</sub></span></div><div class="arrow">→</div><div class="box"><strong>Add & Norm</strong><span class="small">得到下一层输入</span></div></div>
+<div class="math" data-math="encoderFirstNorm"></div>
+<div class="key">接下来的 FFN，接收的是 Y<sub>E</sub>：已经过上下文读取、残差相加与归一化的表示。</div>
+<p>原始 token ID 序列 x 在这些模块之前，已经经过词嵌入与位置编码。</p>
+<p class="small">C 是完整 Encoder 堆叠之后的结果；不要把尚未讲完的一层直接跳写成最终 C。</p>
+</section>
+
+<section class="slide" id="encoder-ffn" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>Feed Forward：进一步处理每个位置的特征</h2>
+<p class="lead">取 Y<sub>E</sub> 的第 i 行，记作向量 yᵢ。它进入一个小型前馈网络：</p>
+<div class="math" data-math="ffnPosition"></div>
+<div class="columns"><div class="panel"><h3>输入已有上下文</h3><p>注意力已把来源信息汇入 yᵢ。</p><p>FFN 在这个位置内部，学习怎样非线性地重新组合这些特征。</p></div><div class="panel soft"><h3>输出是什么？</h3><p>fᵢ 仍然是特征向量，宽度回到主干 d。</p><p>各位置的 fᵢ 排成矩阵，就是 F<sub>E</sub>。</p></div></div>
+<div class="key">“逐位置”指本次运算不重新读其它行；输入本身可以已经包含上下文。</div>
+</section>
+
+<section class="slide" id="ffn-shapes" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>FFN 的三步：扩展、激活、组合回主干</h2>
+<div class="flow"><div class="box">Y<sub>E</sub><br><strong>4 × 512</strong></div><div class="arrow">→</div><div class="box">乘 W₁、加 b₁<br><strong>4 × 2048</strong></div><div class="arrow">→</div><div class="box">ReLU<br><strong>4 × 2048</strong></div><div class="arrow">→</div><div class="box">乘 W₂、加 b₂<br><strong>4 × 512</strong></div></div>
+<div class="columns"><div><p>W₁：512 × 2048<br>b₁：2048 维</p><p>W₂：2048 × 512<br>b₂：512 维</p></div><div class="panel soft"><p>位置数一直是 4。</p><p>改变的是每个位置的特征宽度。</p><p class="small">512 / 2048 是原论文设置；4 个源位置是教学假设。中间宽度 d<sub>ff</sub> 是设计选择。</p></div></div>
+<p class="small">同一层各位置共享这组 W₁、b₁、W₂、b₂；不同 Encoder 层各有自己的参数。</p>
+</section>
+
+<section class="slide" id="ffn-nonlinearity" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>为什么中间要放 ReLU？</h2>
+<div class="flow"><div class="box">三个中间分量<br><strong>(2, −1, 0.5)</strong></div><div class="arrow">→</div><div class="box">ReLU：逐分量取 max(0, t)</div><div class="arrow">→</div><div class="box"><strong>(2, 0, 0.5)</strong></div></div>
+<p>如果没有中间的非线性，两次带偏置的线性变换可以合成一次：</p>
+<div class="math compact" data-math="ffnWithoutActivation"></div>
+<div class="key">非线性使整个 FFN 一般无法再压缩成一次固定的线性变换，增加了它对特征模式的表达能力。</div>
+<p class="small">这里使用原论文的 ReLU 版本。它处理内部特征，不负责把分数变成概率。</p>
+</section>
+
+<section class="slide" id="encoder-second-norm" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>第二个 Add & Norm：加回 FFN 自己的输入</h2>
+<div class="math" data-math="encoderSecondNorm"></div>
+<div class="columns"><div class="panel"><h3>主路</h3><p>Y<sub>E</sub> → FFN → F<sub>E</sub></p><p>产生每个位置的新特征组合。</p></div><div class="panel soft"><h3>旁路</h3><p>直接传递 Y<sub>E</sub>。</p><p>加法的两路是 Y<sub>E</sub> 与 F<sub>E</sub>。</p></div></div>
+<div class="key">旁路接的是这一子层的输入 Y<sub>E</sub>，不是最底部的 token ID，也不是这一 Encoder 层最初的 H<sub>E</sub>。</div>
+<p class="small">第二处 LayerNorm 重新计算统计量，并使用自己的一组 γ、β。输出仍有同样的行数和主干宽度。</p>
+</section>
+
+<section class="slide" id="encoder-stack" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
+<h2>一层的输出，继续成为下一层的输入</h2>
+<div class="math" data-math="encoderStackFlow"></div>
+<div class="columns"><div class="panel"><h3>原论文重复 N = 6 层</h3><p>每层都执行自注意力、第一次 Add & Norm、FFN、第二次 Add & Norm。</p><p>结构相同，参数分别学习。</p></div><div class="panel soft"><h3>最终得到 C</h3><div class="math" data-math="encoderCshape"></div><p>C 的每一行仍对应一个源位置，是经过多层处理的上下文表示。</p></div></div>
+<div class="key">现在才把左侧完整 Encoder 的产出 C，交给右侧 Decoder 读取。</div>
+<div class="source"><a href="https://arxiv.org/html/1706.03762v7#S3.SS1" target="_blank" rel="noreferrer">原论文 §3.1、§3.3</a></div>
+</section>
+
+<section class="slide" id="cross-sources" data-chapter="连接 Decoder" hidden aria-roledescription="幻灯片">
+<h2>交叉注意力：查询与内容来自不同序列</h2>
+<p class="lead">Decoder 用自身表示 Y₁ 提出查询，读取 Encoder 的最终结果 C。</p>
+<div class="table-wrap"><table><thead><tr><th>对象</th><th>来源</th><th>作用</th></tr></thead><tbody>
+<tr><td>Q</td><td><span data-math="crossQuery"></span></td><td>目标侧需要查询什么？</td></tr>
+<tr><td>K</td><td><span data-math="crossKey"></span></td><td>源侧提供匹配特征。</td></tr>
+<tr><td>V</td><td><span data-math="crossValue"></span></td><td>源侧提供可读取内容。</td></tr>
+</tbody></table></div>
+<div class="key">这是当前交叉注意力头自己的参数。它与下方自注意力的参数分别学习。</div>
+<p class="small">本节针对原论文 encoder–decoder。首个 decoder-only 实现会省去 Encoder 和这处交叉注意力。</p>
+</section>
+
+<section class="slide" id="cross-shapes" data-chapter="连接 Decoder" hidden aria-roledescription="幻灯片">
+<h2>权重矩阵可以是长方形</h2>
+<p class="lead">两条目标侧 Query，读取四个源位置：</p>
+<div class="table-wrap"><table class="attention-grid"><thead><tr><th>A</th><th>源 j = 1</th><th>源 j = 2</th><th>源 j = 3</th><th>源 j = 4</th></tr></thead><tbody>
+<tr><th>目标 i = 1</th><td>a₁₁</td><td>a₁₂</td><td>a₁₃</td><td>a₁₄</td></tr><tr><th>目标 i = 2</th><td>a₂₁</td><td>a₂₂</td><td>a₂₃</td><td>a₂₄</td></tr>
+</tbody></table></div>
+<div class="math compact" data-math="crossWeights"></div>
+<p>A：2 × 4；V：4 × dᵥ；因此 O = AV：<strong>2 × dᵥ</strong>。</p>
+<div class="key">每个 Query 获得一个读取结果。输出仍对齐目标侧的位置，多头组合后加回 Y₁。</div>
+<div class="math compact" data-math="crossResidual"></div>
+</section>
+
+<section class="slide" id="cross-mask" data-chapter="连接 Decoder" hidden aria-roledescription="幻灯片">
+<h2>“后面的源位置”不等于“未来目标”</h2>
+<div class="columns"><div class="panel"><h3>源句</h3><p>在全文输入翻译中，源句已经完整给出。</p><p>目标第 2 位可以读取有效的源句第 4 位。</p></div><div class="panel soft"><h3>目标句</h3><p>目标是逐步生成的；因果自注意力仍要限制未来目标信息。</p><p class="small">源侧 padding 等无效位置仍可遮罩。</p></div></div>
+<details class="review"><summary>检查：改变源句第 4 个 token，目标第 2 位的输出变了，能证明因果遮罩失效吗？</summary><p>不能仅据此认定失效。已知源输入发生变化，目标输出可以合理变化。检查未来目标泄漏时，应固定源输入与参数，控制随机性，再扰动未来目标位置。</p></details>
+<div class="source"><a href="https://arxiv.org/html/1706.03762v7#S3.SS2.SSS3" target="_blank" rel="noreferrer">原论文 §3.2.3</a></div>
+</section>
+
+<section class="slide" id="review" data-chapter="复习检查" hidden aria-roledescription="幻灯片">
+<h2>用计算依赖来检查理解</h2>
+<p class="lead">先判断，再展开对照。每题都说明它在检查什么。</p>
+<details class="review" name="review-check"><summary>固定本层输入，只改头 1 的 W<sub>Q</sub>，什么可能改变？</summary><p>头 1 的 Q 和注意力权重可能改变；该头的 V 与头 2 的本次读取结果保持不变。检查“参数影响沿哪条路径传播”。</p></details>
+<details class="review" name="review-check"><summary>固定 FFN 参数，只改 Y<sub>E</sub> 的第 3 行，第 1 行的 FFN 输出会变吗？</summary><p>不会。当前 FFN 逐位置计算，第 1 行直接依赖自己的输入行。检查“逐位置”与“输入已含上下文”的区别。</p></details>
+<details class="review" name="review-check"><summary>第二个 Add & Norm 加回哪一个输入？最终 C 又是什么？</summary><p>加回 FFN 的输入 Y<sub>E</sub>。重复完整 Encoder 层之后的 C 仍是按源位置排列的特征矩阵，供 Decoder 的 K/V 投影使用。</p></details>
+<div class="spacer"></div>
+<p class="small">完整公式与补充说明：<a href="transformer-residual-map.html" target="_blank" rel="noreferrer">长文参考</a> · <a href="../reviews/2026-09-19-U00-U02-阶段回顾.html" target="_blank" rel="noreferrer">阶段回顾</a></p>
+</section>
+</main>
+<footer class="bottom">
+<div class="page-status" id="page-status" aria-live="polite">第 1 / 24 页</div>
+<div class="keyboard"><kbd>←</kbd> <kbd>→</kbd> 或 PageUp / PageDown 翻页 · <kbd>Home</kbd> <kbd>End</kbd> 首末页</div>
+<div class="buttons"><button id="prev" type="button">← 上一页</button><button id="next" class="primary" type="button">下一页 →</button></div>
+</footer>
+<div id="tool-status" class="sr-only" role="status"></div>
+<dialog id="toc" aria-labelledby="toc-title"><div class="dialog-head"><h2 id="toc-title">课件目录</h2><button type="button" id="close-toc">关闭</button></div><p class="small">每页都有固定主题与地址；可以跳回任意概念。</p><nav id="toc-list" class="toc-groups" aria-label="幻灯片目录"></nav></dialog>
+<script>
+(() => {
+  const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  const v = s => '<mi>' + escape(s) + '</mi>', num = n => '<mn>' + n + '</mn>', op = s => '<mo>' + escape(s) + '</mo>';
+  const row = s => '<mrow>' + s + '</mrow>';
+  const sub = (b,s) => '<msub>' + row(b) + row(s) + '</msub>';
+  const sup = (b,s) => '<msup>' + row(b) + row(s) + '</msup>';
+  const frac = (a,b) => '<mfrac>' + row(a) + row(b) + '</mfrac>';
+  const sqrt = a => '<msqrt>' + a + '</msqrt>';
+  const par = a => op('(') + a + op(')');
+  const call = (name,arg) => '<mi mathvariant="normal">' + name + '</mi>' + par(arg);
+  const eq = (a,b) => a + op('=') + b;
+  const sum = (under,over) => over == null ? '<munder>' + op('∑') + row(under) + '</munder>' : '<munderover>' + op('∑') + row(under) + row(over) + '</munderover>';
+  const vec = values => par(values.map(n => num(n)).join(op(',')));
+  const matrix = rows => op('[') + '<mtable>' + rows.map(r => '<mtr>' + r.map(n => '<mtd>' + num(n) + '</mtd>').join('') + '</mtr>').join('') + '</mtable>' + op(']');
+  const math = expression => '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">' + expression + '</math>';
+  const H=v('H'), C=v('C'), d=v('d'), hi=sub(v('h'),v('i')), ui=sub(v('u'),v('i')), ci=sub(v('c'),v('i'));
+  const tilde='<mover>'+v('h')+op('~')+'</mover>', ti=sub(tilde,v('i')), hp=sup(hi,op('′'));
+  const He=sub(H,v('E')), Ue=sub(v('U'),v('E')), Ye=sub(v('Y'),v('E')), Fe=sub(v('F'),v('E'));
+  const Y1=sub(v('Y'),num(1)), Y2=sub(v('Y'),num(2)), Us=sub(v('U'),v('s')), Uc=sub(v('U'),v('c'));
+  const WO=sub(v('W'),v('O')), dk=sub(d,v('k')), b=par(v('b'));
+  const headVar=(symbol,index) => sup(sub(v(symbol),v(index)),b);
+  const aij=headVar('a','ij'), vj=headVar('v','j'), oi=headVar('o','i'), sij=headVar('s','ij'), rij=headVar('r','ij');
+  const mij=sub(v('m'),v('ij')), mi=sub(v('μ'),v('i')), vari=sup(sub(v('σ'),v('i')),num(2));
+  const norm = v('γ') + op('⊙') + frac(ti+op('−')+mi,sqrt(vari+op('+')+v('ε'))) + op('+')+v('β');
+  const forms = {
+    Hrows:H+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',v('n')+op('×')+d), hshape:hi+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',d),
+    He,C,H,Y1Y2:Y1+op(',')+Y2,D:v('D'),Zp:v('Z')+op(',')+v('p'),
+    encoderFirstNorm:eq(Ye,call('LN',He+op('+')+Ue)),
+    ffnPosition:eq(sub(v('f'),v('i')),call('ReLU',sub(v('y'),v('i'))+sub(v('W'),num(1))+op('+')+sub(v('b'),num(1)))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2))),
+    ffnWithoutActivation:eq(par(sub(v('y'),v('i'))+sub(v('W'),num(1))+op('+')+sub(v('b'),num(1)))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2)),sub(v('y'),v('i'))+par(sub(v('W'),num(1))+sub(v('W'),num(2)))+op('+')+par(sub(v('b'),num(1))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2)))),
+    encoderSecondNorm:eq(sup(He,'<mtext>next</mtext>'),sub('<mi mathvariant="normal">LN</mi>','<mtext>FFN</mtext>')+par(Ye+op('+')+Fe)),
+    encoderStackOutput:eq(C,sup(He,par(v('N')))),
+    crossQuery:eq(v('Q'),Y1+sub(v('W'),v('Q'))),
+    crossKey:eq(v('K'),C+sub(v('W'),v('K'))),
+    crossValue:eq(v('V'),C+sub(v('W'),v('V'))),
+    crossWeights:eq(v('A'),sub('<mi mathvariant="normal">softmax</mi>','<mtext>src</mtext>')+par(frac(v('Q')+sup(v('K'),op('⊤')),sqrt(dk))+op('+')+sub(v('M'),'<mtext>src</mtext>'))),
+    crossOutput:eq(v('O'),v('A')+v('V')),
+    crossResidual:eq(Y2,call('LN',Y1+op('+')+Uc)),
+    ffn:eq(call('FFN',v('y')),call('ReLU',v('y')+sub(v('W'),num(1))+op('+')+sub(v('b'),num(1)))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2))),
+    query:eq(headVar('q','i'),hi+sup(sub(v('W'),v('Q')),b)),
+    key:eq(headVar('k','j'),sub(v('h'),v('j'))+sup(sub(v('W'),v('K')),b)),
+    value:eq(vj,sub(v('h'),v('j'))+sup(sub(v('W'),v('V')),b)),
+    raw:eq(rij,headVar('q','i')+op('·')+headVar('k','j')),
+    scaled:eq(sij,frac(rij,sqrt(dk))),
+    weights:eq(aij,frac(call('exp',sij+op('+')+mij),sum(v('ℓ'))+call('exp',headVar('s','iℓ')+op('+')+sub(v('m'),v('iℓ'))))),
+    head:eq(oi,sum(v('j'))+aij+vj),
+    concat:eq(ci,call('Concat',sup(sub(v('o'),v('i')),par(num(1)))+op(',')+op('…')+op(',')+sup(sub(v('o'),v('i')),par(v('B'))))),
+    projection:eq(ui,ci+WO), add:eq(ti,hi+op('+')+ui),
+    layernorm:eq(hp,norm),
+    mean:eq(mi,frac(num(1),d)+sum(eq(v('k'),num(1)),d)+sub(tilde,v('ik'))),
+    variance:eq(vari,frac(num(1),d)+sum(eq(v('k'),num(1)),d)+sup(par(sub(tilde,v('ik'))+op('−')+mi),num(2))),
+    concatExample:eq(ci,call('Concat',vec([2,0])+op(',')+vec([0,3])))+op('=')+vec([2,0,0,3]),
+    projectionExample:eq(ui,vec([2,0,0,3])+matrix([[1,1],[0,1],[1,0],[1,-1]]))+op('=')+vec([5,-1]),
+    addExample:eq(ti,vec([1,3])+op('+')+vec([5,-1]))+op('=')+vec([6,2])
+  };
+
+  forms.qProjectionExample=eq(sub(v('q'),v('i')),vec([1,3])+matrix([[1,0],[0,2]]))+op('=')+vec([1,6]);
+  forms.weightedExample=eq(sub(v('o'),v('i')),num(0.25)+vec([4,0])+op('+')+num(0.75)+vec([0,8]))+op('=')+vec([1,6]);
+  forms.affineExample=eq(hp,vec([2,0.5])+op('⊙')+vec([1,-1])+op('+')+vec([0,1]))+op('≈')+vec([2,0.5]);
+  forms.encoderStackFlow=sup(He,par(num(0)))+op('→')+sup(He,par(num(1)))+op('→')+op('…')+op('→')+sup(He,par(num(6)))+op('=')+C;
+  forms.encoderCshape=C+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',sub(v('n'),v('s'))+op('×')+d);
+  document.querySelectorAll('[data-math]').forEach(element=>{
+    const expression=forms[element.dataset.math];
+    if(expression==null)throw new Error('Missing formula: '+element.dataset.math);
+    element.innerHTML=math(expression);
+  });
+  function architecture(host){
+    const NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');
+    svg.setAttribute('viewBox','0 0 650 570');svg.setAttribute('role','img');svg.setAttribute('aria-label','原论文 Encoder 与 Decoder 的简图，显示每个模块的简式计算。');
+    function element(tag,attrs){const item=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([key,value])=>item.setAttribute(key,String(value)));svg.appendChild(item);return item;}
+    function text(x,y,value,size=15){const item=element('text',{x,y,'text-anchor':'middle','dominant-baseline':'middle','font-size':size,fill:'var(--ink)'});item.textContent=value;}
+    function wire(path){element('path',{d:path,class:'wire','marker-end':'url(#deck-arch-arrow)'});}
+    const defs=element('defs',{}),marker=document.createElementNS(NS,'marker');
+    for(const [key,value] of Object.entries({id:'deck-arch-arrow',viewBox:'0 0 8 8',refX:7,refY:4,markerWidth:5,markerHeight:5,orient:'auto'}))marker.setAttribute(key,value);
+    const tip=document.createElementNS(NS,'path');tip.setAttribute('d','M 0 0 L 8 4 L 0 8 Z');tip.setAttribute('fill','#72878d');marker.appendChild(tip);defs.appendChild(marker);
+    function node(x,y,title,formula,focus=false){element('rect',{x:x-108,y:y-23,width:216,height:46,rx:5,class:focus?'node focus':'node'});text(x,y-9,title,16);text(x,y+10,formula,16);}
+    text(155,22,'Encoder · N = 6',17);text(485,22,'Decoder · N = 6',17);
+    element('rect',{x:29,y:216,width:252,height:226,rx:9,class:'frame'});element('rect',{x:359,y:109,width:252,height:333,rx:9,class:'frame'});
+    for(const x of [155,485]){wire('M '+x+' 463 V 433');wire('M '+x+' 387 V 379');wire('M '+x+' 333 V 325');wire('M '+x+' 279 V 271');wire('M '+x+' 445 H '+(x+118)+' V 356 H '+(x+108));wire('M '+x+' 329 H '+(x+118)+' V 248 H '+(x+108));}
+    wire('M 485 225 V 217');wire('M 485 171 V 163');wire('M 485 221 H 603 V 140 H 593');wire('M 485 117 V 109');wire('M 485 63 V 59');
+    wire('M 155 225 V 202 H 326 V 302 H 377');text(286,189,'C → K / V',16);
+    node(155,248,'Add & Norm','H_next = LN(Y + F)',true);node(155,302,'Feed Forward','F = FFN(Y)',true);node(155,356,'Add & Norm','Y = LN(H + U)');node(155,410,'Self-Attention','U = MHA(H)');
+    node(485,140,'Add & Norm','D = LN(Y₂ + F)');node(485,194,'Feed Forward','F = FFN(Y₂)');node(485,248,'Add & Norm','Y₂ = LN(Y₁ + Uc)');node(485,302,'Cross-Attention','Uc = CrossAttn(Y₁, C)');node(485,356,'Add & Norm','Y₁ = LN(H + Us)');node(485,410,'Masked Self-Attention','Us = MHA_causal(H)');
+    node(155,486,'Embedding + 位置','H₀ = √d Embed(x) + P');node(485,486,'Embedding + 位置','H₀ = √d Embed(y_shift) + P');
+    node(485,86,'Linear','Z = D W_vocab + b');
+    element('rect',{x:377,y:34,width:216,height:25,rx:5,class:'node'});text(485,47,'p = softmax_vocab(Z)',16);
+    text(155,543,'已知源输入',16);text(485,543,'目标序列（右移）',16);wire('M 155 530 V 509');wire('M 485 530 V 509');
+    host.appendChild(svg);
+  }
+  document.querySelectorAll('[data-diagram="architecture"]').forEach(architecture);
+  const slides=Array.from(document.querySelectorAll('.slide'));
+  const ids=slides.map(slide=>slide.id);
+  const status=document.getElementById('page-status');
+  const prev=document.getElementById('prev'),next=document.getElementById('next');
+  const progress=document.querySelector('.progress');
+  const toc=document.getElementById('toc'),tocList=document.getElementById('toc-list');
+  const storageKey='projectllm-transformer-slides-position-v1';
+  let current=0;
+  const groups=new Map();
+  slides.forEach((slide,index)=>{
+    const heading=slide.querySelector('h1,h2').textContent;
+    slide.setAttribute('role','group');slide.setAttribute('aria-label','第 '+(index+1)+' 页：'+heading);
+    const meta=document.createElement('div');meta.className='meta';
+    const chapter=document.createElement('span');chapter.textContent=slide.dataset.chapter;
+    const number=document.createElement('span');number.textContent=String(index+1).padStart(2,'0')+' / '+slides.length;meta.append(chapter,number);slide.prepend(meta);
+    let group=groups.get(slide.dataset.chapter);
+    if(!group){group=document.createElement('div');const title=document.createElement('h3');title.textContent=slide.dataset.chapter;group.appendChild(title);groups.set(slide.dataset.chapter,group);tocList.appendChild(group);}
+    const link=document.createElement('a');link.href='#'+slide.id;link.dataset.jump=slide.id;
+    const ordinal=document.createElement('span');ordinal.className='ordinal';ordinal.textContent=String(index+1);
+    const label=document.createElement('span');label.textContent=heading;link.append(ordinal,label);group.appendChild(link);
+  });
+  function go(index,updateAddress=true){
+    if(!Number.isInteger(index)||index<0||index>=slides.length)return;
+    current=index;
+    slides.forEach((slide,i)=>{slide.hidden=i!==index;});
+    slides[index].scrollTop=0;
+    prev.disabled=index===0;next.disabled=index===slides.length-1;
+    status.textContent='第 '+(index+1)+' / '+slides.length+' 页 · '+slides[index].dataset.chapter;
+    progress.setAttribute('aria-valuemax',slides.length);progress.setAttribute('aria-valuenow',index+1);
+    document.getElementById('progress-fill').style.width=((index+1)/slides.length*100)+'%';
+    tocList.querySelectorAll('a').forEach(link=>{if(link.dataset.jump===slides[index].id)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+    if(updateAddress){try{history.replaceState(null,'','#'+slides[index].id);}catch{}}
+    try{localStorage.setItem(storageKey,slides[index].id);}catch{}
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+  function initialIndex(){
+    const hash=decodeURIComponent(location.hash.slice(1));if(ids.includes(hash))return ids.indexOf(hash);
+    try{const saved=localStorage.getItem(storageKey);if(ids.includes(saved))return ids.indexOf(saved);}catch{}
+    return 0;
+  }
+  prev.addEventListener('click',()=>go(current-1));next.addEventListener('click',()=>go(current+1));
+  document.addEventListener('click',event=>{const jump=event.target.closest('[data-jump]');if(!jump)return;const index=ids.indexOf(jump.dataset.jump);if(index<0)return;event.preventDefault();go(index);if(toc.open)toc.close();});
+  document.getElementById('open-toc').addEventListener('click',()=>toc.showModal());
+  document.getElementById('close-toc').addEventListener('click',()=>toc.close());
+  toc.addEventListener('click',event=>{if(event.target===toc){const box=toc.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)toc.close();}});
+  window.addEventListener('hashchange',()=>{const index=ids.indexOf(decodeURIComponent(location.hash.slice(1)));if(index>=0)go(index,false);});
+  document.addEventListener('keydown',event=>{
+    if(toc.open||event.altKey||event.ctrlKey||event.metaKey||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+    if(['ArrowRight','PageDown'].includes(event.key)){event.preventDefault();go(current+1);}
+    else if(['ArrowLeft','PageUp'].includes(event.key)){event.preventDefault();go(current-1);}
+    else if(event.key==='Home'){event.preventDefault();go(0);}
+    else if(event.key==='End'){event.preventDefault();go(slides.length-1);}
+    else if(event.key===' '&&!event.target.closest('button,a,summary')){event.preventDefault();go(current+(event.shiftKey?-1:1));}
+  });
+  const fullButton=document.getElementById('fullscreen');
+  fullButton.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{document.getElementById('tool-status').textContent='当前环境无法进入全屏，仍可使用翻页。';}});
+  document.addEventListener('fullscreenchange',()=>fullButton.textContent=document.fullscreenElement?'退出全屏':'全屏');
+  document.getElementById('print-deck').addEventListener('click',()=>window.print());
+  go(initialIndex());
+})();
+</script>
+</body>
+</html>

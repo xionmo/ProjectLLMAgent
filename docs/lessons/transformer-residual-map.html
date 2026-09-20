@@ -28,8 +28,9 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <main id="transformer-residual-map">
 <div class="topline">LLM 智能体的原理、系统与协作 · 课件 02 · 2026-09-21</div>
 <h1>Transformer：把架构图对齐到每一步计算</h1>
-<p>每个计算框都包含<strong>模块名称、公式和作用</strong>。先在原论文架构中定位，再放大我们正在学习的注意力 → 残差相加 → LayerNorm。</p>
+<p>每个计算框都包含<strong>模块名称、公式和作用</strong>。先在原论文架构中定位，再对照公式与输入输出，把一个完整层的计算连接起来。</p>
 <nav class="actions" aria-label="课程链接">
+<a href="transformer-slides.html">翻页复习版（24 页）</a>
 <a href="attention-symbols-01.html">课件 01：注意力符号</a>
 <a href="../Attention-Is-All-You-Need-伴读-v0.1.html">原论文伴读</a>
 <a href="https://arxiv.org/html/1706.03762v7#S3.SS1" target="_blank" rel="noreferrer">原论文图 1 与 §3.1</a>
@@ -40,7 +41,7 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <button type="button" data-view="map" aria-pressed="true" aria-controls="diagram-content">图 1：架构与公式</button>
 <button type="button" data-view="residual" aria-pressed="false" aria-controls="diagram-content">放大：注意力与 Add &amp; Norm</button>
 </div>
-<p id="view-status" class="status" aria-live="polite">本次定位：Decoder 中间的交叉注意力。</p>
+<p id="view-status" class="status" aria-live="polite">图示焦点：Encoder 的 Feed Forward → 第二个 Add &amp; Norm。</p>
 <div class="reading-key"><span>箭头：从下往上读</span><span>绿色框：当前学习位置</span><span>每个框：名称 → 公式 → 作用</span></div>
 <figure id="diagram-content">
 <p class="pan-hint">小屏可横向查看整张图；下方的公式和说明会按屏幕宽度排版。</p>
@@ -74,8 +75,35 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <p>ReLU 对每个分量取 max(0, t)，把负值变为 0；这里处理的是内部特征。</p>
 <p class="subtle">原论文主干宽度 d = 512，FFN 中间宽度为 2048。本页小例子另外使用 d = 2。</p></article>
 </div>
-<article id="cross-attention-lesson">
-<h2>本轮：交叉注意力怎样连接两条序列？</h2>
+<article id="encoder-ffn-lesson">
+<h2>Encoder 层的后半段：FFN 与第二个 Add &amp; Norm</h2>
+<p>从左侧图的第一个 Add &amp; Norm 之后开始。此时已有 Y<sub>E</sub>：它是一组已经通过注意力汇入上下文、再经残差相加和归一化的表示。原始 token ID 序列 x 在进入这些模块之前，已经经过词嵌入与位置编码。</p>
+<div class="formula" data-math="encoderFirstNorm"></div>
+<h3>① Feed Forward：对每个位置的已有表示做非线性变换</h3>
+<p>取 Y<sub>E</sub> 的第 i 行，记作向量 y<sub>i</sub>。同一层的 FFN 对每个位置都应用同一组参数：</p>
+<div class="formula" data-math="ffnPosition"></div>
+<div class="table-wrap"><table><thead><tr><th>步骤</th><th>发生什么</th><th>每个位置的向量宽度</th></tr></thead><tbody>
+<tr><td>第一次线性变换</td><td>y<sub>i</sub>W<sub>1</sub> + b<sub>1</sub>：将已有特征重新组合，形成中间特征。</td><td>d → d<sub>ff</sub></td></tr>
+<tr><td>ReLU</td><td>逐分量取 max(0, t)，引入非线性；例如三个中间分量 (2, −1, 0.5) 变成 (2, 0, 0.5)。</td><td>d<sub>ff</sub> → d<sub>ff</sub></td></tr>
+<tr><td>第二次线性变换</td><td>将激活后的中间特征乘 W<sub>2</sub>、加 b<sub>2</sub>，组合回主干宽度，得到 f<sub>i</sub>。</td><td>d<sub>ff</sub> → d</td></tr>
+</tbody></table></div>
+<p>W<sub>1</sub>、W<sub>2</sub> 是可训练矩阵，b<sub>1</sub>、b<sub>2</sub> 是可训练的偏置向量。原论文使用 d = 512、d<sub>ff</sub> = 2048；这是中间宽度的设计选择，不是 token 数量增加了。</p>
+<div class="example"><strong>假设源序列有 4 个位置：</strong>Y<sub>E</sub> 为 4 × 512 → 第一次变换后为 4 × 2048 → ReLU 后仍为 4 × 2048 → F<sub>E</sub> 为 4 × 512。F<sub>E</sub> 的第 i 行就是 f<sub>i</sub>。</div>
+<p><strong>“逐位置”描述这一运算的依赖范围：</strong>第 i 行直接使用 y<sub>i</sub> 计算，不在此处重新读取其它行；但 y<sub>i</sub> 本身已经包含此前注意力带来的上下文。同一层共享参数，不等于把不同位置的输入混在一起。</p>
+<p>ReLU 的作用在于提供非线性。如果删掉它，两次带偏置的线性变换可以合并成一次：</p>
+<div class="formula" data-math="ffnWithoutActivation"></div>
+<h3>② 第二个 Add &amp; Norm：把 FFN 输出加回它自己的输入</h3>
+<div class="formula" data-math="encoderSecondNorm"></div>
+<p>这一条残差旁路传递的是 <strong>Y<sub>E</sub></strong>，即 FFN 的输入。相加的是 y<sub>i</sub> + f<sub>i</sub>；再由这一处 LayerNorm 计算新的统计量，应用自己的 γ、β，形成该位置的新表示。两处 LayerNorm 的计算形式相同，但参数分别学习。</p>
+<p>这里两路都回到主干宽度 d，因此能逐分量相加。第二个 Add &amp; Norm 之后仍有 4 个位置、每个位置仍为 512 维；改变的是表示的内容。</p>
+<h3>③ 一层的输出，与整个 Encoder 的输出</h3>
+<p>H<sub>E</sub><sup>next</sup> 先成为下一 Encoder 层的输入。原论文重复 N = 6 层，每层依次完成“自注意力 → Add &amp; Norm → FFN → Add &amp; Norm”，各层有各自的参数。完成最后一层才得到图中供 Decoder 读取的 C：</p>
+<div class="formula" data-math="encoderStackOutput"></div>
+<p>C 仍然按源 token 位置排列，每一行是一份经过多层上下文处理的特征向量。先把这条完整路径对齐，再接回下面的交叉注意力。</p>
+<p class="subtle">原文依据：<a href="https://arxiv.org/html/1706.03762v7#S3.SS1" target="_blank" rel="noreferrer">§3.1 Encoder 层结构</a>、<a href="https://arxiv.org/html/1706.03762v7#S3.SS3" target="_blank" rel="noreferrer">§3.3 Position-wise Feed-Forward Networks</a>。</p>
+</article>
+<details id="cross-attention-lesson">
+<summary>后续接回：交叉注意力怎样连接两条序列？</summary>
 <p>原论文讨论机器翻译：源句是已经给出的输入，目标句是逐步生成的输出。Encoder 把源句编码成 C；Decoder 下方的因果自注意力与 Add &amp; Norm 产生 Y<sub>1</sub>，包含目标侧已知前缀的信息。交叉注意力让 Decoder 带着自己的查询，读取 Encoder 的结果。</p>
 <p>先看一个头。下面这组 W 属于当前交叉注意力头，与下方自注意力头的参数分别学习。</p>
 <div class="table-wrap"><table><thead><tr><th>对象</th><th>从哪里产生</th><th>本次作用</th></tr></thead><tbody>
@@ -90,7 +118,7 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <div class="formula" data-math="crossResidual"></div>
 <p>这节讲的是原论文的 encoder–decoder 结构。后续首个 decoder-only 实现不包含左侧 Encoder 和这处交叉注意力；届时会对照保留的因果自注意力、FFN 等模块。</p>
 <p class="subtle">原文位置：<a href="https://arxiv.org/html/1706.03762v7#S3.SS2.SSS3" target="_blank" rel="noreferrer">§3.2.3：Attention 的三种用途</a>。</p>
-</article>
+</details>
 </section>
 
 <section data-panel="residual" hidden>
@@ -190,6 +218,11 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
   const forms = {
     Hrows:H+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',v('n')+op('×')+d), hshape:hi+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',d),
     He,C,H,Y1Y2:Y1+op(',')+Y2,D:v('D'),Zp:v('Z')+op(',')+v('p'),
+    encoderFirstNorm:eq(Ye,call('LN',He+op('+')+Ue)),
+    ffnPosition:eq(sub(v('f'),v('i')),call('ReLU',sub(v('y'),v('i'))+sub(v('W'),num(1))+op('+')+sub(v('b'),num(1)))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2))),
+    ffnWithoutActivation:eq(par(sub(v('y'),v('i'))+sub(v('W'),num(1))+op('+')+sub(v('b'),num(1)))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2)),sub(v('y'),v('i'))+par(sub(v('W'),num(1))+sub(v('W'),num(2)))+op('+')+par(sub(v('b'),num(1))+sub(v('W'),num(2))+op('+')+sub(v('b'),num(2)))),
+    encoderSecondNorm:eq(sup(He,'<mtext>next</mtext>'),sub('<mi mathvariant="normal">LN</mi>','<mtext>FFN</mtext>')+par(Ye+op('+')+Fe)),
+    encoderStackOutput:eq(C,sup(He,par(v('N')))),
     crossQuery:eq(v('Q'),Y1+sub(v('W'),v('Q'))),
     crossKey:eq(v('K'),C+sub(v('W'),v('K'))),
     crossValue:eq(v('V'),C+sub(v('W'),v('V'))),
@@ -233,14 +266,16 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
     wire(svg,'M '+R+' 552 V 534');wire(svg,'M '+R+' 430 V 412');skip(svg,R,NW,543,360);
     wire(svg,'M '+R+' 308 V 290');wire(svg,'M '+R+' 186 V 168');wire(svg,'M '+R+' 64 V 51');
     wire(svg,'M '+L+' 552 V 516 H '+W*.5+' V 726 H '+(R-NW/2));label(svg,(L+W*.5)/2,494,'最终 C → K / V',true);
-    box(svg,L,604,NW,NH,'Add & Norm',[eq(C,call('LN',Ye+op('+')+Fe))],'相加，再对各位置的特征归一化');
-    box(svg,L,726,NW,NH,'Feed Forward',[eq(Fe,call('FFN',Ye))],'每个位置独立变换特征');
+    label(svg,L,404,'整个 Encoder：重复 N 层后的产出',true);
+    mathLabel(svg,L,445,NW,forms.encoderStackOutput);
+    box(svg,L,604,NW,NH,'第二个 Add & Norm',[forms.encoderSecondNorm],'把 FFN 输出加回 Y_E，形成一层的输出','focus');
+    box(svg,L,726,NW,NH,'Feed Forward',[eq(Fe,call('FFN',Ye))],'对每个位置做非线性特征变换','focus');
     box(svg,L,848,NW,NH,'Add & Norm',[eq(Ye,call('LN',He+op('+')+Ue))],'把注意力输出加回原表示');
     box(svg,L,970,NW,NH,'Multi-Head Attention',[eq(Ue,call('MHA',He))],'从输入序列读取并汇总信息');
     box(svg,R,360,NW,NH,'Add & Norm',[eq(v('D'),call('LN',Y2+op('+')+v('F')))],'形成这一解码层的输出');
     box(svg,R,482,NW,NH,'Feed Forward',[eq(v('F'),call('FFN',Y2))],'每个位置独立变换特征');
     box(svg,R,604,NW,NH,'Add & Norm',[eq(Y2,call('LN',Y1+op('+')+Uc))],'把跨序列读取结果加回表示');
-    box(svg,R,726,NW,NH,'交叉注意力 · 本次',[eq(Uc,call('CrossAttn',Y1+op(',')+C))],'Q 来自 Y₁；K / V 来自 C','focus');
+    box(svg,R,726,NW,NH,'Multi-Head · 交叉注意力',[eq(Uc,call('CrossAttn',Y1+op(',')+C))],'Q 来自 Y₁；K / V 来自 C');
     box(svg,R,848,NW,NH,'Add & Norm',[eq(Y1,call('LN',H+op('+')+Us))],'残差相加 → LayerNorm');
     box(svg,R,970,NW,NH,'Masked Multi-Head',[eq(Us,sub('<mi mathvariant="normal">MHA</mi>','<mtext>causal</mtext>')+par(H))],'只读取当前与之前的位置');
     box(svg,R,238,NW,NH,'Linear · 词表投影',[eq(v('Z'),v('D')+sub(v('W'),'<mtext>vocab</mtext>')+op('+')+v('b'))],'把特征变成各候选 token 的分数');
@@ -250,7 +285,7 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
       box(svg,x,1118,NW,NH,'Embedding + 位置编码',[eq(sup(index===0?He:H,par(num(0))),sqrt(d)+call('Embed',token)+op('+')+v('P'))],'第一层输入：token 表示加位置');
       wire(svg,'M '+x+' 1194 V 1170');label(svg,x,1216,index===0?'输入 token 序列 x':'右移后的目标 token 序列');
     });
-    label(svg,W/2,1252,'图中 C、D 指最终层输出；中间层输出继续传给下一层。',true);
+    label(svg,W/2,1252,'Encoder 重复 N 层得到 C；Decoder 的末层输出 D 进入词表投影。',true);
   }
   function drawResidual(svg,W){
     const X=W*.34,side=W*.90,NW=Math.min(440,W*.60);
@@ -274,13 +309,13 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
     const width=Math.round(graph.getBoundingClientRect().width);if(width<1)return;lastWidth=width;graph.replaceChildren();
     const height=mode==='map'?1280:960;
     const svg=el('svg',{width,height,viewBox:'0 0 '+width+' '+height,role:'img','aria-labelledby':'graph-title graph-desc'},graph);
-    const title=el('title',{id:'graph-title'},svg);title.textContent=mode==='map'?'Transformer 架构：当前定位交叉注意力':'残差连接：注意力分支与恒等旁路相加，然后做 LayerNorm';
-    const desc=el('desc',{id:'graph-desc'},svg);desc.textContent=mode==='map'?'左为 Encoder，右为 Decoder。绿色框是 Decoder 中间的交叉注意力，Q 来自目标侧 Y1，K/V 来自 Encoder 的最终输出 C。公式和作用直接写在各节点内。':'原表示 h 经主路注意力得到 u，旁路直接传递 h。两者相加为 h 加波浪号，再做层归一化。图中的 h 为一、三，u 为五、负一，相加得到六、二。';
+    const title=el('title',{id:'graph-title'},svg);title.textContent=mode==='map'?'Transformer 架构：当前定位 Encoder 的 FFN 与第二个 Add and Norm':'残差连接：注意力分支与恒等旁路相加，然后做 LayerNorm';
+    const desc=el('desc',{id:'graph-desc'},svg);desc.textContent=mode==='map'?'左为 Encoder，右为 Decoder。绿色框是 Encoder 的逐位置前馈网络及第二个 Add and Norm。先得到一层的输出，再重复六层得到最终 C，供右侧交叉注意力读取。':'原表示 h 经主路注意力得到 u，旁路直接传递 h。两者相加为 h 加波浪号，再做层归一化。图中的 h 为一、三，u 为五、负一，相加得到六、二。';
     const defs=el('defs',{},svg);const marker=el('marker',{id:'lesson-arrow',viewBox:'0 0 8 8',refX:7,refY:4,markerWidth:6,markerHeight:6,orient:'auto'},defs);el('path',{d:'M 0 0 L 8 4 L 0 8 Z',fill:'var(--wire)'},marker);
     if(mode==='map')drawMap(svg,width);else drawResidual(svg,width);
     root.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===mode)));
     root.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==mode);
-    document.getElementById('view-status').textContent=mode==='map'?'本次定位：Decoder 中间的交叉注意力。':'局部计算：uᵢ 是注意力子层输出；h̃ᵢ 是相加结果；h′ᵢ 是归一化结果。';
+    document.getElementById('view-status').textContent=mode==='map'?'图示焦点：Encoder 的 Feed Forward → 第二个 Add & Norm。':'局部计算：uᵢ 是注意力子层输出；h̃ᵢ 是相加结果；h′ᵢ 是归一化结果。';
     document.getElementById('diagram-caption').textContent=mode==='map'?'图 1 的教学重绘：Encoder 与 Decoder 分别堆叠 N = 6 层，各层参数分别学习。':'数值例子：给定两个头输出 (2, 0)、(0, 3)，经下方所列 W_O 得到 uᵢ = (5, −1)；旁路输入 hᵢ = (1, 3)。';
   }
   root.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{mode=button.dataset.view;render();try{localStorage.setItem('projectllm-transformer-lesson-02',JSON.stringify({view:mode}));}catch{}}));
