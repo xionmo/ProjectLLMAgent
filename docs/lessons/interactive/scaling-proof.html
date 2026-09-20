@@ -1,0 +1,22 @@
+<dialog id="scaling-proof" class="proof-dialog" aria-labelledby="scaling-proof-title">
+<div class="dialog-head"><h2 id="scaling-proof-title">为什么除以 √dₖ？</h2><button type="button" data-close-proof>关闭</button></div>
+<p>这是分析点积随维数变化的<strong>统计尺度</strong>，不是要求每次点积都等于 √dₖ。为简化记号，固定一个 query 和 key，省略位置及头编号。</p>
+<h3>1. 明确分析假设</h3>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi mathvariant="normal">E</mi><mo>[</mo><msub><mi>q</mi><mi>ℓ</mi></msub><mo>]</mo><mo>=</mo><mi mathvariant="normal">E</mi><mo>[</mo><msub><mi>k</mi><mi>ℓ</mi></msub><mo>]</mo><mo>=</mo><mn>0</mn><mo>,</mo><mspace width="1em"/><mi mathvariant="normal">Var</mi><mo>(</mo><msub><mi>q</mi><mi>ℓ</mi></msub><mo>)</mo><mo>=</mo><mi mathvariant="normal">Var</mi><mo>(</mo><msub><mi>k</mi><mi>ℓ</mi></msub><mo>)</mo><mo>=</mo><mn>1</mn></mrow></math></div>
+<p>假设 q<sub>ℓ</sub> 与 k<sub>ℓ</sub> 独立，并且各乘积项之间独立。ℓ 是向量的分量编号。真实训练后的 Q/K 不一定满足这些条件；它们是这段推导的简化假设。</p>
+<h3>2. 每个乘积项的方差为 1</h3>
+<p>记 X<sub>ℓ</sub> = q<sub>ℓ</sub>k<sub>ℓ</sub>。独立性使期望可以分开：</p>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi mathvariant="normal">E</mi><mo>[</mo><msub><mi>X</mi><mi>ℓ</mi></msub><mo>]</mo><mo>=</mo><mi mathvariant="normal">E</mi><mo>[</mo><msub><mi>q</mi><mi>ℓ</mi></msub><mo>]</mo><mi mathvariant="normal">E</mi><mo>[</mo><msub><mi>k</mi><mi>ℓ</mi></msub><mo>]</mo><mo>=</mo><mn>0</mn></mrow></math></div>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi mathvariant="normal">E</mi><mo>[</mo><msubsup><mi>X</mi><mi>ℓ</mi><mn>2</mn></msubsup><mo>]</mo><mo>=</mo><mi mathvariant="normal">E</mi><mo>[</mo><msubsup><mi>q</mi><mi>ℓ</mi><mn>2</mn></msubsup><mo>]</mo><mi mathvariant="normal">E</mi><mo>[</mo><msubsup><mi>k</mi><mi>ℓ</mi><mn>2</mn></msubsup><mo>]</mo><mo>=</mo><mn>1</mn></mrow></math></div>
+<p>因为零均值、方差为 1，所以二阶矩 E[q²]、E[k²] 都为 1。于是 Var(X<sub>ℓ</sub>) = E[X<sub>ℓ</sub>²] − E[X<sub>ℓ</sub>]² = 1。</p>
+<h3>3. 点积是 dₖ 个乘积项的和</h3>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>r</mi><mo>=</mo><mi>q</mi><mo>·</mo><mi>k</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>ℓ</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>d</mi><mi>k</mi></msub></munderover><msub><mi>X</mi><mi>ℓ</mi></msub></mrow></math></div>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi mathvariant="normal">Var</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>ℓ</mi><mo>=</mo><mn>1</mn></mrow><msub><mi>d</mi><mi>k</mi></msub></munderover><mi mathvariant="normal">Var</mi><mo>(</mo><msub><mi>X</mi><mi>ℓ</mi></msub><mo>)</mo><mo>=</mo><msub><mi>d</mi><mi>k</mi></msub></mrow></math></div>
+<p>独立性使不同项的协方差为 0，所以方差可以相加。<strong>方差为 dₖ，标准差才是 √dₖ。</strong></p>
+<h3>4. 缩放后让方差不再随维数增长</h3>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>s</mi><mo>=</mo><mfrac><mi>r</mi><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt></mfrac></mrow></math></div>
+<div class="math"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi mathvariant="normal">Var</mi><mo>(</mo><mi>s</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi mathvariant="normal">Var</mi><mo>(</mo><mi>r</mi><mo>)</mo></mrow><msup><mrow><mo>(</mo><msqrt><msub><mi>d</mi><mi>k</mi></msub></msqrt><mo>)</mo></mrow><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msub><mi>d</mi><mi>k</mi></msub><msub><mi>d</mi><mi>k</mi></msub></mfrac><mo>=</mo><mn>1</mn></mrow></math></div>
+<div class="note"><strong>为什么不是除以 dₖ？</strong>那样方差会变成 dₖ / dₖ² = 1/dₖ，随着维数增加继续收缩。这里选择补偿的是点积的标准差尺度。</div>
+<p>例如 dₖ = 64，推导中的原始标准差为 8，所以除以 8。某次分数 r = −16 时，s = −2；这并不表示该来源被禁止，也不要求所有 s 都落在 [−1, 1]。</p>
+<p class="proof-foot">Var 是这里用于推导的统计量；实际注意力前向只除以 √dₖ，不额外计算一行分数的方差。缩放帮助控制送进 softmax 的典型分数差距；不能仅凭概率曲线的尖平判断整个模型的训练信号强弱。依据：<a href="https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1" target="_blank" rel="noreferrer">原论文 §3.2.1 与脚注 1</a>。</p>
+</dialog>

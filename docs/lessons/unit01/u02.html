@@ -1,0 +1,193 @@
+<section class="slide" id="architecture-types" data-chapter="U02 · 输入与架构" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>Encoder、Decoder 与 Encoder–Decoder</h2>
+<div class="table-wrap"><table><thead><tr><th>结构</th><th>典型可见性</th><th>常见任务方向</th></tr></thead><tbody><tr><td>Encoder-only</td><td>已知输入的有效位置可以双向交互</td><td>表征、分类、检索</td></tr><tr><td>Decoder-only</td><td>自回归时读取当前及过去位置</td><td>下一 token 预测与生成</td></tr><tr><td>Encoder–Decoder</td><td>源输入双向编码，目标侧因果读取，并交叉查询源侧</td><td>翻译、摘要等条件生成</td></tr></tbody></table></div>
+<div class="key">Transformer 的定义不等于“所有 token 都无条件看全文”。原论文已经包含因果遮罩。</div>
+<p class="small">本书先读完整原论文结构，再明确课程实现保留或改变哪些模块。</p>
+</section>
+
+<section class="slide" id="token-embedding" data-chapter="U02 · 输入与架构" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>Embedding：把离散 ID 查成可训练向量</h2>
+<div class="math" data-math="unitEmbedding"></div>
+<div class="columns"><div class="panel"><h3>输入</h3><p>xᵢ 是词表中的一个整数 ID。</p><p>E 是“词表大小 × d”的可训练表。</p></div><div class="panel soft"><h3>输出</h3><p>查出 E 的第 xᵢ 行，得到 d 维向量 eᵢ。</p><p>初始查表时，相同 ID 得到相同的 token 向量；位置与上下文随后进入。</p></div></div>
+<div class="key">ID 的大小本身没有连续语义距离。Embedding 的各维也不要求能逐一命名为人类概念。</div>
+</section>
+
+<section class="slide" id="position-encoding" data-chapter="U02 · 输入与架构" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>位置表示：让模型能区分排列与位置</h2>
+<p>只有内容向量的 self-attention 对同时重排输入位置具有相应的等变性；模型还需要顺序信息。</p>
+<div class="math compact" data-math="unitPositionSin"></div><div class="math compact" data-math="unitPositionCos"></div>
+<div class="key">原论文为不同特征维度选择不同频率的正弦和余弦，并与 token 向量逐分量相加。</div>
+<p class="small">pos 是位置，k 是一对特征维度的编号。课程初版用可学习的绝对位置表；RoPE 等机制作为后续明确替换的设计。</p>
+</section>
+
+<section class="slide" id="input-representation" data-chapter="U02 · 输入与架构" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>进入 Encoder 前：token 表示与位置表示相加</h2>
+<div class="math" data-math="unitInputRepresentation"></div>
+<div class="columns"><div class="panel"><h3>同一形状才能相加</h3><p>每个 eᵢ 和 Pᵢ 都是 d 维。按位置排成 H<sub>E</sub><sup>(0)</sup>，形状为 n<sub>s</sub> × d。</p></div><div class="panel soft"><h3>上标 (0) 的含义</h3><p>这是第一层输入。后续 Encoder 层接收前一层输出，不重新做 token 查表。</p></div></div>
+<p class="small">√d 是原论文对词嵌入的缩放；注意力分数除以 √dₖ 是另一处操作。课程实现会在配置中记录自己的 embedding_scale。</p>
+</section>
+
+<section class="slide" id="tensor-notation" data-chapter="U02 · 输入与架构" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>先给每根轴命名，再做张量变换</h2>
+<div class="table-wrap"><table class="dense"><thead><tr><th>记号</th><th>含义</th><th>常见位置</th></tr></thead><tbody><tr><td>N<sub>b</sub></td><td>batch 中的样本数</td><td>输入第一根轴</td></tr><tr><td>T / n<sub>s</sub> / n<sub>t</sub></td><td>序列、源、目标的位置数</td><td>注意力 query/key 两根轴</td></tr><tr><td>d / dₖ / dᵥ</td><td>主干、匹配、Value 的特征宽度</td><td>每个向量的分量数</td></tr><tr><td>N<sub>h</sub></td><td>注意力头数</td><td>分头后的一根轴</td></tr><tr><td>i、j、ℓ</td><td>查询位置、来源位置、特征分量</td><td>逐项公式中的索引</td></tr></tbody></table></div>
+<div class="key">“行数减少”可能是位置变少，也可能是输入特征宽度改变；必须先确认是哪一个矩阵。</div>
+</section>
+
+<section class="slide" id="encoder-self-attention" data-chapter="U02 · Encoder 自注意力" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>Encoder self-attention：同一源序列提出查询并提供内容</h2>
+<div class="math-row compact"><div class="math" data-math="unitEncoderQ"></div><div class="math" data-math="unitEncoderK"></div><div class="math" data-math="unitEncoderV"></div></div>
+<p>H<sub>E</sub> 的每一行既产生自己的 query，也提供供其它位置读取的 key/value。</p>
+<div class="math compact" data-math="unitEncoderAttention"></div>
+<div class="key">目标是为每个源位置形成包含上下文的新表示。输出仍按源位置排列，并没有直接生成目标句。</div>
+<p class="small">原论文的源输入已完整给出，因此通常允许读取全部有效源位置；padding 等无效位置仍要处理。</p>
+</section>
+
+<section class="slide" id="scaling-assumptions" data-chapter="U02 · 分数缩放的推导" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>√dₖ 的推导，从假设和单个乘积项开始</h2>
+<p>为分析维数的影响，假设 q<sub>ℓ</sub>、k<sub>ℓ</sub> 零均值、单位方差；两者独立，各乘积项之间也独立。</p>
+<div class="math compact" data-math="unitScaleAssumptions"></div>
+<div class="math compact" data-math="unitProductMean"></div>
+<div class="math compact" data-math="unitProductVariance"></div>
+<div class="key">令 X<sub>ℓ</sub> = q<sub>ℓ</sub>k<sub>ℓ</sub>，可得 E[X<sub>ℓ</sub>] = 0、Var(X<sub>ℓ</sub>) = 1。ℓ 是特征分量编号。</div>
+<p class="small">真实训练后的 Q/K 不一定满足这些假设。这是解释缩放设计的简化统计模型。</p>
+</section>
+
+<section class="slide" id="scaling-derivation" data-chapter="U02 · 分数缩放的推导" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>点积方差是 dₖ，标准差才是 √dₖ</h2>
+<div class="math" data-math="unitDotVariance"></div>
+<div class="math" data-math="unitScaledVariance"></div>
+<p>独立项的协方差为 0，所以方差可相加；除以常数时，方差除以该常数的平方。</p>
+<div class="key">除以 √dₖ 后方差为 1。若除以 dₖ，方差反而变成 1/dₖ，会随维数继续缩小。</div>
+<p class="small">dₖ = 64 时用 8 缩放。某次 r = −16 得 s = −2，不代表该来源被禁止。Var 是这段理论分析的统计量；实际前向这里只除以 √dₖ，不额外计算一行分数的方差。</p>
+<div class="source"><a href="https://arxiv.org/html/1706.03762v7#S3.SS2.SSS1" target="_blank" rel="noreferrer">原论文 §3.2.1 与脚注 1</a></div>
+</section>
+
+<section class="slide" id="encoder-visibility" data-chapter="U02 · Encoder 自注意力" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>源位置的“后面”，也是已经给出的输入</h2>
+<div class="columns"><div class="panel"><h3>Encoder</h3><p>对一个完整给定的源句，位置 1 可以读取有效位置 2、3、4。</p><p>只改变源位置 4，位置 1 的 Encoder 表示可能变化。</p></div><div class="panel soft"><h3>自回归 Decoder</h3><p>预测目标未来时，不能让当前目标位置读到尚未生成的目标 token。</p><p>可见性由任务与信息可用性决定。</p></div></div>
+<div class="key">Encoder 的双向读取，与错误地泄露未来目标标签，不能用同一个“j 大于 i”规则混为一谈。</div>
+</section>
+
+<section class="slide" id="encoder-case-setup" data-chapter="U02 · 连贯 Encoder 算例" data-study="算例" hidden aria-roledescription="幻灯片">
+<h2>给定一个能逐步核对的小型 Encoder 输入</h2>
+<div class="columns"><div><div class="math compact" data-math="encCaseH"></div><div class="math compact" data-math="encCaseWQ"></div></div><div><p>2 个源位置；d = 3，dₖ = 2，dᵥ = 3；一个头、一个 Encoder 层。</p><p>W<sub>V</sub> = W<sub>O</sub> = I₃；所有偏置为 0，两个源位置都有效。</p><p class="small">两处 LayerNorm 都取 γ = (1,1,1)、β = 0、ε = 10⁻⁵。</p></div></div>
+<div class="key">算例从给定 H<sub>E</sub> 开始，覆盖一个 block。它没有训练过程，也不采用原论文的 512 维 / 8 头配置。</div>
+</section>
+
+<section class="slide" id="encoder-case-attention" data-chapter="U02 · 连贯 Encoder 算例" data-study="算例" hidden aria-roledescription="幻灯片">
+<h2>从 Q/K/V 算到 A，再真正读回内容</h2>
+<div class="math-row compact"><div class="math" data-math="encCaseQK"></div><div class="math" data-math="encCaseV"></div></div>
+<div class="math-row compact"><div class="math" data-math="encCaseA"></div><div class="math" data-math="encCaseO"></div></div>
+<p>分数矩阵为 I₂ / √2；按行 softmax 得到 A。再做 O = AV，表中的数值保留三位小数。</p>
+<div class="key">第一行对第二个源位置的权重约 0.330，展示了合法的 Encoder 双向读取。这里 V 的宽度 3 与 Q/K 的宽度 2 不同。</div>
+</section>
+
+<section class="slide" id="encoder-attention-addnorm" data-chapter="U02 · Encoder 第一次残差" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>Encoder 第一次 Add & Norm 产出 Y<sub>E</sub></h2>
+<div class="math" data-math="encoderFirstNorm"></div>
+<div class="columns"><div class="panel"><h3>主路</h3><p>H<sub>E</sub> 经多头注意力和 W<sub>O</sub> 得到 U<sub>E</sub>。</p></div><div class="panel soft"><h3>旁路</h3><p>直接把 H<sub>E</sub> 送到加法处；它是这一注意力子层的输入。</p></div></div>
+<p>相加后按每个位置的特征做 LayerNorm，得到 Y<sub>E</sub>，形状仍为 n<sub>s</sub> × d。</p>
+<div class="key">接下来 FFN 接收的是 Y<sub>E</sub>，不是原始 token ID，也不是未加旁路的 U<sub>E</sub>。</div>
+</section>
+
+<section class="slide" id="encoder-case-addnorm" data-chapter="U02 · 连贯 Encoder 算例" data-study="算例" hidden aria-roledescription="幻灯片">
+<h2>延续同一组数值：相加，再逐行归一化</h2>
+<div class="math compact" data-math="encCaseResidual1"></div>
+<div class="math compact" data-math="encCaseY"></div>
+<p>本例 W<sub>O</sub> 是单位矩阵，所以 U<sub>E</sub> = O。对上方矩阵的两行分别计算均值和方差。</p>
+<div class="key">这里每一行有 3 个分量，归一化结果并不只有 ±1。后续 FFN 将使用这个 Y<sub>E</sub>。</div>
+</section>
+
+<section class="slide" id="encoder-case-ffn" data-chapter="U02 · 连贯 Encoder 算例" data-study="算例" hidden aria-roledescription="幻灯片">
+<h2>给定 FFN 的两组矩阵，逐步得到 F<sub>E</sub></h2>
+<div class="math-row compact"><div class="math" data-math="encCaseW1"></div><div class="math" data-math="encCaseW2"></div></div>
+<div class="math-row compact"><div class="math" data-math="encCaseActive"></div><div class="math" data-math="encCaseF"></div></div>
+<p class="small">计算依次为 Y<sub>E</sub>W₁ → ReLU → 乘 W₂。偏置均为 0；中间宽度为 4，输出回到 3 维。数值由同一份确定性算例生成。</p>
+</section>
+
+<section class="slide" id="encoder-case-output" data-chapter="U02 · 连贯 Encoder 算例" data-study="算例" hidden aria-roledescription="幻灯片">
+<h2>第二次 Add & Norm，完成这一层</h2>
+<div class="math compact" data-math="encCaseResidual2"></div>
+<div class="math compact" data-math="encCaseC"></div>
+<p>加回的是 Y<sub>E</sub>。再用第二处 LayerNorm 逐行处理；本例只有一层，因此这一层的结果就是示例 C。</p>
+<div class="key">位置数仍为 2，主干宽度仍为 3。变化的是每个位置的表示内容。</div>
+<div class="source"><a href="unit-01-encoder-example.json" target="_blank" rel="noreferrer">查看完整矩阵、统计量与未舍入结果</a></div>
+</section>
+
+<section class="slide" id="encoder-summary" data-chapter="U02 · 完整 Encoder" data-study="补齐" hidden aria-roledescription="幻灯片">
+<h2>现在可以从源 token 一直追到 C</h2>
+<div class="flow"><div class="box">x：离散 ID</div><div class="arrow">→</div><div class="box">Embedding + 位置</div><div class="arrow">→</div><div class="box">N 层完整 Encoder</div><div class="arrow">→</div><div class="box">C：上下文矩阵</div></div>
+<div class="table-wrap"><table><thead><tr><th>组件</th><th>新增什么作用</th></tr></thead><tbody><tr><td>Self-attention</td><td>在允许的位置之间读取与汇合信息。</td></tr><tr><td>FFN</td><td>在每个位置内部进行非线性特征处理。</td></tr><tr><td>Residual + LayerNorm</td><td>组合子层输出与输入，并按既定位置整理尺度。</td></tr></tbody></table></div>
+<div class="key">C 不是一段已经生成的文字，也不是词表概率；它是后续可查询的一组源表示。</div>
+</section>
+
+<section class="slide" id="decoder-input" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>Decoder 输入的是已知目标前缀的表示</h2>
+<div class="columns"><div class="panel"><h3>训练</h3><p>目标序列右移，BOS 放在起点；每个输入位置预测下一个目标 token。</p></div><div class="panel soft"><h3>生成</h3><p>从 BOS 或给定前缀开始，把实际生成的 token 逐步加入输入。</p></div></div>
+<div class="math" data-math="unitDecoderInput"></div>
+<p>H<sub>D</sub><sup>(0)</sup> 由目标 token 的词嵌入和位置表示组成。后续解码层读取前一层输出。</p>
+<p class="small">较深层的目标表示还可以包含前面交叉注意力读入的源信息；“目标侧表示”不等于“只有目标文本的信息”。</p>
+</section>
+
+<section class="slide" id="decoder-self-attention" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>Decoder self-attention：三路都来自目标侧，读取受因果约束</h2>
+<div class="math compact" data-math="unitDecoderSelf"></div>
+<p>当前目标侧 H 同时产生 Q、K、V。对位置 i，允许读取已经可用的目标位置 j ≤ i。</p>
+<div class="key">机制与 Encoder self-attention 相同；区别在任务规定的可见性和输入序列来源。</div>
+<p class="small">注意力权重矩阵仍按 query 行、key 列排列。实现训练并行时，mask 必须覆盖每一层的信息通路。</p>
+</section>
+
+<section class="slide" id="decoder-first-norm" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>Decoder 第一个 Add & Norm：先形成 Y₁</h2>
+<div class="math" data-math="unitDecoderNorm1"></div>
+<p>因果自注意力输出 U<sub>s</sub> 加回本层目标输入 H，再通过这一处 LayerNorm。</p>
+<div class="key">Y₁ 是接下来交叉注意力的查询侧输入；它还没有经过本层的交叉读取。</div>
+<p class="small">旁路输入、子层输出和归一化结果具有相同的位置数与主干宽度。</p>
+</section>
+
+<section class="slide" id="decoder-cross-norm" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>第二个 Add & Norm：把跨序列读取结果加回 Y₁</h2>
+<div class="math" data-math="crossResidual"></div>
+<p>U<sub>c</sub> 是交叉注意力经过多头组合后的输出，行数与目标 query 相同。</p>
+<div class="key">残差相加的两路是 Y₁ 与 U<sub>c</sub>。不是把源矩阵 C 直接与目标矩阵相加。</div>
+<p>这一步得到 Y₂，供当前 Decoder 层的 FFN 处理。</p>
+</section>
+
+<section class="slide" id="decoder-ffn" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>Decoder 的 FFN：对融合后的目标表示逐位置计算</h2>
+<div class="math" data-math="unitDecoderFFN"></div>
+<p>结构仍是线性变换 → ReLU → 线性变换。输入 Y₂ 已包含本层的目标读取与源侧读取结果。</p>
+<div class="key">同一 Decoder 层各位置共享这一组 FFN 参数；它不与 Encoder 的 FFN 自动共享参数。</div>
+<p class="small">目标有 n<sub>t</sub> 个位置，FFN 输出仍为 n<sub>t</sub> × d。</p>
+</section>
+
+<section class="slide" id="decoder-last-norm" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>第三个 Add & Norm：完成这一 Decoder 层</h2>
+<div class="math" data-math="unitDecoderNorm3"></div>
+<p>FFN 输出加回它自己的输入 Y₂，经过第三处 LayerNorm，得到 D<sup>next</sup>。</p>
+<div class="key">若还有下一层，D<sup>next</sup> 继续作为输入；只有最终层的表示才送到顶端词表投影。</div>
+<p class="small">这一层的三处 LayerNorm 具有各自的可训练参数，不是一组 γ/β 在三个框中重复使用。</p>
+</section>
+
+<section class="slide" id="decoder-block" data-chapter="U02 · Decoder 计算链" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>完整 Decoder 层：三条子层与三条残差路径</h2>
+<div class="steps"><div class="step"><span>1</span><div>H → 因果自注意力 U<sub>s</sub> → LN₁(H + U<sub>s</sub>) = Y₁</div></div><div class="step"><span>2</span><div>Y₁ 查询 C → U<sub>c</sub> → LN₂(Y₁ + U<sub>c</sub>) = Y₂</div></div><div class="step"><span>3</span><div>Y₂ → FFN 输出 F → LN₃(Y₂ + F) = D<sup>next</sup></div></div>
+<div class="key">每条旁路都连接当前子层自己的输入。源 C 是交叉注意力读取的内容，不是三条残差的公共输入。</div>
+<p class="small">这是原论文 post-LN 结构；课程序列模型的 pre-LN decoder-only 在后面的实现页单独标明。</p>
+</section>
+
+<section class="slide" id="vocabulary-head" data-chapter="U02 · 从特征到输出" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>最终表示如何变成词表 logits？</h2>
+<div class="math" data-math="unitOutputHead"></div>
+<p>D 的形状为 N<sub>b</sub> × T × d；词表投影后是 N<sub>b</sub> × T × |𝒱|。</p>
+<div class="columns"><div class="panel"><h3>训练</h3><p>对所有有效目标位置，取对应标签计算损失。</p></div><div class="panel soft"><h3>生成</h3><p>使用当前前缀最后位置的 logits，选择下一个 token。</p></div></div>
+<p class="small">共享输入 embedding 时，可令 W<sub>vocab</sub> = Eᵀ；这是同一参数的两种使用路径，参数量不能重复计数。</p>
+</section>
+
+<section class="slide" id="decoder-only" data-chapter="U02 · 课程实现选择" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>课程初版：decoder-only、pre-LN、GELU</h2>
+<div class="math compact" data-math="unitPreLN1"></div><div class="math compact" data-math="unitPreLN2"></div>
+<p>没有左侧 Encoder 与交叉注意力；每个 block 保留因果自注意力和 FFN。最后再做 final LayerNorm 与词表投影。</p>
+<div class="key">与原论文分开记录：learned absolute position、pre-LN、GELU、普通 MHA、输入/输出 embedding 权重共享。</div>
+<p class="small">GELU(x) = xΦ(x)，Φ 是标准正态分布的累积分布函数。它是内部激活，不把一组输出归一化成概率。</p>
+</section>

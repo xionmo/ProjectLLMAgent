@@ -1,0 +1,151 @@
+<section class="slide" id="implementation-plan" data-chapter="U03 · 手写实现" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>手写模型：每次只增加已经能解释的部件</h2>
+<ol><li>先用小矩阵核对投影、分数、mask、softmax 与 AV。</li><li>加入多头拼接、W<sub>O</sub>、残差、LayerNorm、FFN。</li><li>接上 token/位置表示、堆叠与词表输出头。</li><li>先通过因果性和形状检查，再加入训练与缓存。</li></ol>
+<div class="columns"><div class="panel"><h3>D0 正确性模型</h3><p>2 层、d = 64、4 头、短序列、FP32、关闭 dropout。</p></div><div class="panel soft"><h3>D1 扩大验证</h3><p>4 层、d = 256、4 头、FFN = 1024、上下文最多 512、259 个 byte/special ID。</p></div></div>
+<p class="small">课程采用 learned absolute position、pre-LN、GELU、MHA 与共享输入/输出 embedding。下面是代码阅读卡，完整训练实验仍待实施。</p>
+</section>
+
+<section class="slide" id="initialization" data-chapter="U03 · 手写实现" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>训练开始前，参数先要有一个数值起点</h2>
+<p>从零训练时，投影、FFN 和 embedding 的参数需要初始化；加载预训练模型则从 checkpoint 的参数开始。</p>
+<div class="math compact" data-math="unitInitialization"></div>
+<p>在独立、零均值的简化条件下，输入分量方差为 1、权重方差取 1/d<sub>in</sub>，可以抵消线性求和对输出方差的影响。</p>
+<div class="key">这解释“为什么初始化也关心尺度”；具体初始化要与激活、残差结构和训练方案一起选择。</div>
+<p class="small">记录初始化、数据打乱与 dropout 的随机状态。固定 seed 不自动保证不同设备或内核逐位一致。</p>
+</section>
+
+<section class="slide" id="attention-code" data-chapter="U03 · 手写实现" data-study="代码卡" hidden aria-roledescription="幻灯片">
+<h2>用基础张量操作对应已学的注意力公式</h2>
+<p class="small">假设 q/k/v 已排成 [N<sub>b</sub>, N<sub>h</sub>, T, d<sub>h</sub>]，这里只写等长自注意力、关闭 dropout 的核心。</p>
+<pre><code>T = q.size(-2)
+blocked = torch.triu(torch.ones(T, T, dtype=torch.bool,
+                               device=q.device), diagonal=1)
+scores = (q @ k.transpose(-2, -1)) / (q.size(-1) ** 0.5)
+scores = scores.masked_fill(blocked, -torch.inf)
+weights = torch.softmax(scores, dim=-1)
+read = weights @ v</code></pre>
+<div class="key">这段代码自己的约定是 blocked=True 表示禁止。其它库接口的布尔 mask 语义要查对应版本，不能凭名字套用。</div>
+<p class="small">交叉注意力和带缓存的矩形形状，不能照搬这里的 T × T 遮罩。</p>
+</section>
+
+<section class="slide" id="preln-code" data-chapter="U03 · 手写实现" data-study="代码卡" hidden aria-roledescription="幻灯片">
+<h2>一个 pre-LN block 的计算顺序</h2>
+<pre><code>def block(h, blocked):
+    x = h + attention(ln1(h), blocked)
+    return x + ffn_gelu(ln2(x))
+
+# ffn_gelu: Linear(d, d_ff) → GELU → Linear(d_ff, d)
+# ln1、ln2、attention、ffn_gelu 分别持有自己的参数</code></pre>
+<p>归一化位于主路子层之前；残差旁路保留未经过这一处 LayerNorm 的输入。</p>
+<div class="key">这是课程初版的 block，不是把原论文 post-LN 公式原样翻译为代码。Embedding、final LayerNorm 与词表头在 block 外连接。</div>
+</section>
+
+<section class="slide" id="training-loop" data-chapter="U03 · 训练与恢复" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>一次训练迭代：哪个动作真正更新了权重？</h2>
+<pre><code>model.train()
+optimizer.zero_grad(set_to_none=True)
+logits = model(inputs)
+loss_sum = F.cross_entropy(logits.reshape(-1, vocab_size),
+    labels.reshape(-1), ignore_index=pad_id, reduction="sum")
+loss = loss_sum / valid_target_count
+loss.backward()
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+optimizer.step()</code></pre>
+<p class="small">inputs/labels 已移位；先处理没有有效目标的 batch。CrossEntropyLoss 接收 raw logits，不需要先对它做 softmax。</p>
+<div class="key">forward 产生结果，backward 计算梯度，optimizer.step 才执行参数更新。</div>
+</section>
+
+<section class="slide" id="adamw" data-chapter="U03 · 训练与恢复" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>AdamW 还保存梯度统计，恢复训练时也要保存它们</h2>
+<div class="math compact" data-math="unitAdamMoments"></div>
+<div class="math compact" data-math="unitAdamBiasCorrection"></div>
+<div class="math compact" data-math="unitAdamW"></div>
+<p>m、v 分别追踪梯度的一阶与平方统计；偏差修正处理初始为零的影响。λ 控制独立的权重衰减项。</p>
+<p class="small">公式为核心逐分量更新示意。学习率、参数分组、精度与梯度裁剪等运行配置还需明确记录。</p>
+<div class="source"><a href="https://docs.pytorch.org/docs/2.9/generated/torch.optim.AdamW.html" target="_blank" rel="noreferrer">PyTorch 2.9 AdamW 定义</a></div>
+</section>
+
+<section class="slide" id="dropout" data-chapter="U03 · 训练与恢复" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>Dropout 与运行模式：为什么做核对时先关闭随机层？</h2>
+<div class="math" data-math="unitDropout"></div>
+<p>设丢弃概率 0 ≤ p &lt; 1。训练时 δ 为 1 的分量保留、为 0 的分量丢弃，并按保留概率缩放；常规 inverted dropout 在 eval 模式下直接传递输入。</p>
+<div class="columns"><div class="panel"><h3>model.eval()</h3><p>切换 dropout 等模块的运行行为；不等于自动关闭梯度计算。</p></div><div class="panel soft"><h3>no_grad / inference_mode</h3><p>控制梯度记录等执行开销；与模块的 train/eval 状态分别设置。</p></div></div>
+<p class="small">LayerNorm 在训练和推理中都从本次输入计算统计量。因果性、缓存和梯度累积对照应先控制随机性。</p>
+</section>
+
+<section class="slide" id="tiny-overfit" data-chapter="U03 · 训练与恢复" data-study="实验卡" hidden aria-roledescription="幻灯片">
+<h2>先让一个小批次学得动，再讨论泛化</h2>
+<div class="columns"><div class="panel"><h3>设置</h3><p>固定一小批无矛盾、可记忆的数据；关闭 dropout，先用 FP32 与清晰的标签规则。</p><p>观察有效位置的 loss、梯度和参数变化。</p></div><div class="panel soft"><h3>若不下降，查什么？</h3><p>标签是否对齐；loss 是否连到参数；是否真的 step；梯度是否有限；学习率与容量是否合适。</p></div></div>
+<div class="key">这是一项实现调试，不是泛化成绩。并非所有数据或带 label smoothing 的目标都应把损失降到零。</div>
+</section>
+
+<section class="slide" id="gradient-accumulation" data-chapter="U03 · 训练与恢复" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>梯度累积要对应同一个总目标</h2>
+<div class="math" data-math="unitAccumulation"></div>
+<p>若两个 microbatch 有效 token 数分别为 10 和 90，平均 loss 分别为 1 和 3，总平均应为 <strong>2.8</strong>，不是 2。</p>
+<div class="key">按总有效目标数加权；累积期间不 step。全部梯度汇总之后，再裁剪、更新参数和推进相应的调度计数。</div>
+<p class="small">与大 batch 对照时，使用相同样本并控制随机性。浮点加法顺序不同可能产生小误差，需事先确定核对口径。</p>
+</section>
+
+<section class="slide" id="checkpoint" data-chapter="U03 · 训练与恢复" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>恢复训练需要的不只是模型参数</h2>
+<div class="table-wrap"><table class="dense"><thead><tr><th>保存内容</th><th>为什么需要</th></tr></thead><tbody><tr><td>模型与优化器状态</td><td>恢复参数和 AdamW 的 m/v 等统计。</td></tr><tr><td>调度器、步数与 token 计数</td><td>恢复学习率与训练预算位置。</td></tr><tr><td>随机状态与数据采样位置</td><td>使下一批数据及随机路径可核对。</td></tr><tr><td>代码、配置、数据版本</td><td>说明此次运行究竟是什么实验。</td></tr></tbody></table></div>
+<div class="key">真正的检查：不中断运行，与保存后恢复运行，下一批数据、loss 和更新是否按约定一致。</div>
+</section>
+
+<section class="slide" id="generation" data-chapter="U03 · 生成与缓存" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>生成循环：先处理前缀，再一次次追加 token</h2>
+<div class="flow"><div class="box">输入前缀</div><div class="arrow">→</div><div class="box">最后位置的 logits</div><div class="arrow">→</div><div class="box">选择 token</div><div class="arrow">→</div><div class="box">追加并继续 / EOS 停止</div></div>
+<div class="columns"><div class="panel"><h3>选择规则</h3><p>argmax、温度、top-k、top-p 等是生成策略；需要固定配置才能比较结果。</p></div><div class="panel soft"><h3>停止规则</h3><p>EOS、最大长度或任务约束决定结束。计时要记录实际生成的 token 数。</p></div></div>
+<p class="small">温度为正数时可对 logits 除以温度；它会改变分布集中程度，不保证改变后的概率更准确。</p>
+</section>
+
+<section class="slide" id="kv-cache" data-chapter="U03 · 生成与缓存" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>KV 缓存复用的是过去位置已经算出的 K、V</h2>
+<div class="columns"><div class="panel"><h3>全前缀重算</h3><p>每生成一个新 token，都重新为整个前缀做各层计算。</p></div><div class="panel soft"><h3>缓存路径</h3><p>prefill 保存每层 K/V；decode 为新位置产生 Q/K/V，用新 Q 读取已有与新增 K/V。</p></div></div>
+<div class="key">在参数、前缀与位置不变的因果模型中，追加未来 token 不应改变过去位置的表示，这是可复用的基础。</div>
+<p class="small">缓存有计算图身份：换权重、换前缀或错位置，都不能继续假定旧缓存有效。</p>
+</section>
+
+<section class="slide" id="cache-offset" data-chapter="U03 · 生成与缓存" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>带缓存时，因果边界包含前缀偏移</h2>
+<div class="math" data-math="unitCacheRule"></div>
+<p>这里 i 是新 chunk 内的零起始 query 编号，j 是包含缓存后的 key 编号。T<sub>past</sub> 是已有缓存长度。</p>
+<div class="math" data-math="unitCacheMaskExample"></div>
+<p class="small">例子：T<sub>past</sub> = 3，新 chunk 长 2；上方是加性 mask，0 允许、−∞ 禁止。两行 query 对五列 key。</p>
+<div class="key">单 token decode 可以看已有与当前 K/V；多 token chunk 还必须阻止 chunk 内的未来读取。</div>
+</section>
+
+<section class="slide" id="cache-equivalence" data-chapter="U03 · 生成与缓存" data-study="实验卡" hidden aria-roledescription="幻灯片">
+<h2>先证明同一前缀的结果一致，再比较速度</h2>
+<ol><li>固定输入、参数、位置和精度；关闭 dropout 与梯度记录。</li><li>比较完整前缀重算与增量缓存的下一位置 logits。</li><li>核对各层缓存长度、位置编号和数值误差。</li><li>故意把位置偏移归零，检查测试是否能发现差异。</li></ol>
+<div class="key">两条生成轨迹一旦已经选出不同 token，后续输入就不同了；不能再把全部差异归因于缓存。</div>
+<p class="small">理想算术下讨论等价；实际浮点计算按记录的容差核对。不能为让测试变绿而任意放宽容差。</p>
+</section>
+
+<section class="slide" id="memory-budget" data-chapter="U03 · 资源与性能" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>显存账：权重装得下，运行也可能装不下</h2>
+<div class="math compact" data-math="unitKVBytes"></div>
+<p>上式为等长 batch 的未压缩 K/V 数值本体：2 份 K/V × 层数 × batch × 长度 × KV 头数 × 每头宽度 × 元素字节数。</p>
+<div class="columns"><div class="panel"><h3>推理还要算</h3><p>KV、临时激活、工作区、分配器与服务开销。</p></div><div class="panel soft"><h3>训练还要算</h3><p>梯度、优化器状态、为反向保留的激活，以及可能的额外精度副本。</p></div></div>
+<p class="small">例：6 层、batch 1、512 个缓存位置、8 个 KV 头、每头 64 维、每元素 2 字节，K/V 本体约 6 MiB；不是整个模型的显存占用。</p>
+</section>
+
+<section class="slide" id="cpu-to-cuda" data-chapter="U03 · 资源与性能" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>从 CPU 优化经验，迁移到 GPU 的问题清单</h2>
+<div class="table-wrap"><table><thead><tr><th>概念</th><th>本课含义</th><th>可以追问什么</th></tr></thead><tbody><tr><td>算子</td><td>矩阵乘法、softmax 等操作</td><td>算什么、形状是什么？</td></tr><tr><td>kernel</td><td>在设备上执行的具体函数</td><td>如何分块、组织线程、访问内存？</td></tr><tr><td>CUDA</td><td>NVIDIA GPU 的编程平台与工具体系</td><td>怎样测量与定位实际瓶颈？</td></tr></tbody></table></div>
+<div class="key">少一些 FLOPs 不自动等于更快。访存量、数据布局、并行规模、调度与融合都可能改变结果。</div>
+</section>
+
+<section class="slide" id="benchmarking" data-chapter="U03 · 资源与性能" data-study="实验卡" hidden aria-roledescription="幻灯片">
+<h2>计时先写清边界</h2>
+<ul><li>GPU 操作通常异步；使用 CUDA events 或明确同步边界。</li><li>先预热，区分编译、首次分配与稳态执行。</li><li>分别报告 prefill、decode 和总时间，记录输入与实际输出长度。</li><li>固定设备、dtype、batch、mask、内核和推理模式。</li></ul>
+<div class="key">短模型、短序列的一次结果不能代表所有规模。先核对结果，再解释速度差异。</div>
+<p class="small">本课先预测瓶颈再实验；不要把某篇论文的硬件加速比直接当成当前 4090 的成绩。</p>
+</section>
+
+<section class="slide" id="experiment-matrix" data-chapter="自测与实验" data-study="实验卡" hidden aria-roledescription="幻灯片">
+<h2>让每个实验都有能被推翻的预测</h2>
+<div class="table-wrap"><table class="dense"><thead><tr><th>对照</th><th>预测</th><th>记录</th></tr></thead><tbody><tr><td>手算 / 张量注意力</td><td>同一数据得到相同结果</td><td>逐项值、最大误差、形状</td></tr><tr><td>有 / 无因果 mask</td><td>只有合法路径应保持过去不受未来影响</td><td>最早差异位置、固定权重证据</td></tr><tr><td>全前缀 / KV</td><td>同一前缀的 logits 在容差内一致</td><td>缓存长度、位置、误差</td></tr><tr><td>正确 / 错误偏移</td><td>负例被等价性检查检出</td><td>失败证据与定位</td></tr></tbody></table></div>
+<p class="small">这些是待实施的实验契约。既有固定权重探针通过，不代表教学模型、训练或真实引擎已经通过。</p>
+</section>

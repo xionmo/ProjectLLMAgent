@@ -1,0 +1,674 @@
+[
+  {
+    "page": 1,
+    "id": "unit-cover",
+    "chapter": "导览",
+    "study": "备课说明",
+    "title": "第一单元：从调用边界到完整模型计算"
+  },
+  {
+    "page": 2,
+    "id": "architecture-atlas",
+    "chapter": "导览",
+    "study": "完整导航",
+    "title": "完整架构导航：每个计算块都有对应章节"
+  },
+  {
+    "page": 3,
+    "id": "model-agent",
+    "chapter": "U00 · 调用与系统",
+    "study": "复习",
+    "title": "语言模型输出，与工具真正执行，是两件事"
+  },
+  {
+    "page": 4,
+    "id": "context-parameters",
+    "chapter": "U00 · 调用与系统",
+    "study": "复习",
+    "title": "纠正信息进入上下文，不等于模型被训练了"
+  },
+  {
+    "page": 5,
+    "id": "trace-diagnosis",
+    "chapter": "U00 · 调用与系统",
+    "study": "复习",
+    "title": "图片数字算错：沿着证据定位第一次偏差"
+  },
+  {
+    "page": 6,
+    "id": "state-lifetimes",
+    "chapter": "U00 · 调用与系统",
+    "study": "复习",
+    "title": "把不同寿命的“状态”分开记账"
+  },
+  {
+    "page": 7,
+    "id": "image-pipeline",
+    "chapter": "U00 · 调用与系统",
+    "study": "预备",
+    "title": "图片输入也需要一条真实的数据通路"
+  },
+  {
+    "page": 8,
+    "id": "experiment-contract",
+    "chapter": "U00 · 调用与系统",
+    "study": "预备",
+    "title": "一个实验先写清：改变什么，观察什么"
+  },
+  {
+    "page": 9,
+    "id": "next-token",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "语言模型学习的是条件分布"
+  },
+  {
+    "page": 10,
+    "id": "vocabulary-logits",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "logits：给每个候选一个实数分数"
+  },
+  {
+    "page": 11,
+    "id": "softmax-basics",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "softmax 把一组分数变成相对概率"
+  },
+  {
+    "page": 12,
+    "id": "cross-entropy",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "交叉熵：目标 token 获得了多少概率？"
+  },
+  {
+    "page": 13,
+    "id": "gradient-meaning",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "梯度：损失对各个变量的局部变化率"
+  },
+  {
+    "page": 14,
+    "id": "gradient-chain",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "输出梯度，怎样传回模型参数？"
+  },
+  {
+    "page": 15,
+    "id": "parameter-update",
+    "chapter": "U01 · 概率与学习",
+    "study": "复习",
+    "title": "梯度与参数更新量不是同一个量"
+  },
+  {
+    "page": 16,
+    "id": "label-shift",
+    "chapter": "U01 · 目标与数据",
+    "study": "复习",
+    "title": "输入与标签错开一位"
+  },
+  {
+    "page": 17,
+    "id": "teacher-forcing",
+    "chapter": "U01 · 目标与数据",
+    "study": "复习",
+    "title": "训练能并行预测，生成却依赖已生成的前缀"
+  },
+  {
+    "page": 18,
+    "id": "causal-probe",
+    "chapter": "U01 · 目标与数据",
+    "study": "复习",
+    "title": "怎样检验“较早位置读不到未来”？"
+  },
+  {
+    "page": 19,
+    "id": "loss-mask",
+    "chapter": "U01 · 目标与数据",
+    "study": "预备",
+    "title": "attention mask 与 loss mask 管的是不同事情"
+  },
+  {
+    "page": 20,
+    "id": "tokenization",
+    "chapter": "U01 · 目标与数据",
+    "study": "预备",
+    "title": "token 是编码单位，不一定是一个字或一个词"
+  },
+  {
+    "page": 21,
+    "id": "split-generalization",
+    "chapter": "U01 · 目标与数据",
+    "study": "复习",
+    "title": "评价前，先问测试到底独立在哪里"
+  },
+  {
+    "page": 22,
+    "id": "objective-choice",
+    "chapter": "U01 · 目标与数据",
+    "study": "预备",
+    "title": "开放式问题有多个好答案，训练目标怎么理解？"
+  },
+  {
+    "page": 23,
+    "id": "architecture-types",
+    "chapter": "U02 · 输入与架构",
+    "study": "补齐",
+    "title": "Encoder、Decoder 与 Encoder–Decoder"
+  },
+  {
+    "page": 24,
+    "id": "token-embedding",
+    "chapter": "U02 · 输入与架构",
+    "study": "补齐",
+    "title": "Embedding：把离散 ID 查成可训练向量"
+  },
+  {
+    "page": 25,
+    "id": "position-encoding",
+    "chapter": "U02 · 输入与架构",
+    "study": "补齐",
+    "title": "位置表示：让模型能区分排列与位置"
+  },
+  {
+    "page": 26,
+    "id": "input-representation",
+    "chapter": "U02 · 输入与架构",
+    "study": "补齐",
+    "title": "进入 Encoder 前：token 表示与位置表示相加"
+  },
+  {
+    "page": 27,
+    "id": "tensor-notation",
+    "chapter": "U02 · 输入与架构",
+    "study": "补齐",
+    "title": "先给每根轴命名，再做张量变换"
+  },
+  {
+    "page": 28,
+    "id": "encoder-self-attention",
+    "chapter": "U02 · Encoder 自注意力",
+    "study": "补齐",
+    "title": "Encoder self-attention：同一源序列提出查询并提供内容"
+  },
+  {
+    "page": 29,
+    "id": "symbols",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "先分清：向量、分数、权重、读取结果"
+  },
+  {
+    "page": 30,
+    "id": "qkv",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "Q、K、V 从当前表示中投影出来"
+  },
+  {
+    "page": 31,
+    "id": "scores",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "原始分数 → 缩放 → 遮罩 → 权重"
+  },
+  {
+    "page": 32,
+    "id": "scaling-assumptions",
+    "chapter": "U02 · 分数缩放的推导",
+    "study": "补齐",
+    "title": "√dₖ 的推导，从假设和单个乘积项开始"
+  },
+  {
+    "page": 33,
+    "id": "scaling-derivation",
+    "chapter": "U02 · 分数缩放的推导",
+    "study": "补齐",
+    "title": "点积方差是 dₖ，标准差才是 √dₖ"
+  },
+  {
+    "page": 34,
+    "id": "mask",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "因果遮罩规定信息从哪里可以流过来"
+  },
+  {
+    "page": 35,
+    "id": "encoder-visibility",
+    "chapter": "U02 · Encoder 自注意力",
+    "study": "补齐",
+    "title": "源位置的“后面”，也是已经给出的输入"
+  },
+  {
+    "page": 36,
+    "id": "weighted-read",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "权重乘整个 Value，再对来源求和"
+  },
+  {
+    "page": 37,
+    "id": "multihead",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "多头：同一批输入，多套读取方式"
+  },
+  {
+    "page": 38,
+    "id": "output-projection",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "WO：组合各头读回来的特征"
+  },
+  {
+    "page": 39,
+    "id": "encoder-case-setup",
+    "chapter": "U02 · 连贯 Encoder 算例",
+    "study": "算例",
+    "title": "给定一个能逐步核对的小型 Encoder 输入"
+  },
+  {
+    "page": 40,
+    "id": "encoder-case-attention",
+    "chapter": "U02 · 连贯 Encoder 算例",
+    "study": "算例",
+    "title": "从 Q/K/V 算到 A，再真正读回内容"
+  },
+  {
+    "page": 41,
+    "id": "residual",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "Add：保留输入的直接贡献，再加子层输出"
+  },
+  {
+    "page": 42,
+    "id": "layernorm-stats",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "LayerNorm：先对一个位置的特征做标准化"
+  },
+  {
+    "page": 43,
+    "id": "layernorm-affine",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "完整 LayerNorm 还会学习缩放和平移"
+  },
+  {
+    "page": 44,
+    "id": "normalization-purpose",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "三个操作，三种目的"
+  },
+  {
+    "page": 45,
+    "id": "normalization-tradeoffs",
+    "chapter": "U02 · 注意力与归一化",
+    "study": "复习",
+    "title": "归一化会改变信息，需要判断得失"
+  },
+  {
+    "page": 46,
+    "id": "encoder-attention-addnorm",
+    "chapter": "U02 · Encoder 第一次残差",
+    "study": "补齐",
+    "title": "Encoder 第一次 Add & Norm 产出 YE"
+  },
+  {
+    "page": 47,
+    "id": "encoder-case-addnorm",
+    "chapter": "U02 · 连贯 Encoder 算例",
+    "study": "算例",
+    "title": "延续同一组数值：相加，再逐行归一化"
+  },
+  {
+    "page": 48,
+    "id": "encoder-route",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "先走完左边：这四步合起来才是一层"
+  },
+  {
+    "page": 49,
+    "id": "encoder-ffn",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "Feed Forward：进一步处理每个位置的特征"
+  },
+  {
+    "page": 50,
+    "id": "ffn-shapes",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "FFN 的三步：扩展、激活、组合回主干"
+  },
+  {
+    "page": 51,
+    "id": "ffn-nonlinearity",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "为什么中间要放 ReLU？"
+  },
+  {
+    "page": 52,
+    "id": "encoder-second-norm",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "第二个 Add & Norm：加回 FFN 自己的输入"
+  },
+  {
+    "page": 53,
+    "id": "encoder-case-ffn",
+    "chapter": "U02 · 连贯 Encoder 算例",
+    "study": "算例",
+    "title": "给定 FFN 的两组矩阵，逐步得到 FE"
+  },
+  {
+    "page": 54,
+    "id": "encoder-case-output",
+    "chapter": "U02 · 连贯 Encoder 算例",
+    "study": "算例",
+    "title": "第二次 Add & Norm，完成这一层"
+  },
+  {
+    "page": 55,
+    "id": "encoder-stack",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "一层的输出，继续成为下一层的输入"
+  },
+  {
+    "page": 56,
+    "id": "encoder-summary",
+    "chapter": "U02 · 完整 Encoder",
+    "study": "补齐",
+    "title": "现在可以从源 token 一直追到 C"
+  },
+  {
+    "page": 57,
+    "id": "decoder-input",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "Decoder 输入的是已知目标前缀的表示"
+  },
+  {
+    "page": 58,
+    "id": "decoder-self-attention",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "Decoder self-attention：三路都来自目标侧，读取受因果约束"
+  },
+  {
+    "page": 59,
+    "id": "decoder-first-norm",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "Decoder 第一个 Add & Norm：先形成 Y₁"
+  },
+  {
+    "page": 60,
+    "id": "cross-sources",
+    "chapter": "U02 · Decoder 与交叉读取",
+    "study": "接回",
+    "title": "交叉注意力：查询与内容来自不同序列"
+  },
+  {
+    "page": 61,
+    "id": "cross-shapes",
+    "chapter": "U02 · Decoder 与交叉读取",
+    "study": "接回",
+    "title": "权重矩阵可以是长方形"
+  },
+  {
+    "page": 62,
+    "id": "cross-mask",
+    "chapter": "U02 · Decoder 与交叉读取",
+    "study": "接回",
+    "title": "“后面的源位置”不等于“未来目标”"
+  },
+  {
+    "page": 63,
+    "id": "decoder-cross-norm",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "第二个 Add & Norm：把跨序列读取结果加回 Y₁"
+  },
+  {
+    "page": 64,
+    "id": "decoder-ffn",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "Decoder 的 FFN：对融合后的目标表示逐位置计算"
+  },
+  {
+    "page": 65,
+    "id": "decoder-last-norm",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "第三个 Add & Norm：完成这一 Decoder 层"
+  },
+  {
+    "page": 66,
+    "id": "decoder-block",
+    "chapter": "U02 · Decoder 计算链",
+    "study": "预备",
+    "title": "完整 Decoder 层：三条子层与三条残差路径"
+  },
+  {
+    "page": 67,
+    "id": "vocabulary-head",
+    "chapter": "U02 · 从特征到输出",
+    "study": "预备",
+    "title": "最终表示如何变成词表 logits？"
+  },
+  {
+    "page": 68,
+    "id": "decoder-only",
+    "chapter": "U02 · 课程实现选择",
+    "study": "预备",
+    "title": "课程初版：decoder-only、pre-LN、GELU"
+  },
+  {
+    "page": 69,
+    "id": "implementation-plan",
+    "chapter": "U03 · 手写实现",
+    "study": "预备",
+    "title": "手写模型：每次只增加已经能解释的部件"
+  },
+  {
+    "page": 70,
+    "id": "initialization",
+    "chapter": "U03 · 手写实现",
+    "study": "预备",
+    "title": "训练开始前，参数先要有一个数值起点"
+  },
+  {
+    "page": 71,
+    "id": "attention-code",
+    "chapter": "U03 · 手写实现",
+    "study": "代码卡",
+    "title": "用基础张量操作对应已学的注意力公式"
+  },
+  {
+    "page": 72,
+    "id": "preln-code",
+    "chapter": "U03 · 手写实现",
+    "study": "代码卡",
+    "title": "一个 pre-LN block 的计算顺序"
+  },
+  {
+    "page": 73,
+    "id": "training-loop",
+    "chapter": "U03 · 训练与恢复",
+    "study": "预备",
+    "title": "一次训练迭代：哪个动作真正更新了权重？"
+  },
+  {
+    "page": 74,
+    "id": "adamw",
+    "chapter": "U03 · 训练与恢复",
+    "study": "预备",
+    "title": "AdamW 还保存梯度统计，恢复训练时也要保存它们"
+  },
+  {
+    "page": 75,
+    "id": "dropout",
+    "chapter": "U03 · 训练与恢复",
+    "study": "预备",
+    "title": "Dropout 与运行模式：为什么做核对时先关闭随机层？"
+  },
+  {
+    "page": 76,
+    "id": "tiny-overfit",
+    "chapter": "U03 · 训练与恢复",
+    "study": "实验卡",
+    "title": "先让一个小批次学得动，再讨论泛化"
+  },
+  {
+    "page": 77,
+    "id": "gradient-accumulation",
+    "chapter": "U03 · 训练与恢复",
+    "study": "预备",
+    "title": "梯度累积要对应同一个总目标"
+  },
+  {
+    "page": 78,
+    "id": "checkpoint",
+    "chapter": "U03 · 训练与恢复",
+    "study": "预备",
+    "title": "恢复训练需要的不只是模型参数"
+  },
+  {
+    "page": 79,
+    "id": "generation",
+    "chapter": "U03 · 生成与缓存",
+    "study": "预备",
+    "title": "生成循环：先处理前缀，再一次次追加 token"
+  },
+  {
+    "page": 80,
+    "id": "kv-cache",
+    "chapter": "U03 · 生成与缓存",
+    "study": "预备",
+    "title": "KV 缓存复用的是过去位置已经算出的 K、V"
+  },
+  {
+    "page": 81,
+    "id": "cache-offset",
+    "chapter": "U03 · 生成与缓存",
+    "study": "预备",
+    "title": "带缓存时，因果边界包含前缀偏移"
+  },
+  {
+    "page": 82,
+    "id": "cache-equivalence",
+    "chapter": "U03 · 生成与缓存",
+    "study": "实验卡",
+    "title": "先证明同一前缀的结果一致，再比较速度"
+  },
+  {
+    "page": 83,
+    "id": "memory-budget",
+    "chapter": "U03 · 资源与性能",
+    "study": "预备",
+    "title": "显存账：权重装得下，运行也可能装不下"
+  },
+  {
+    "page": 84,
+    "id": "cpu-to-cuda",
+    "chapter": "U03 · 资源与性能",
+    "study": "预备",
+    "title": "从 CPU 优化经验，迁移到 GPU 的问题清单"
+  },
+  {
+    "page": 85,
+    "id": "benchmarking",
+    "chapter": "U03 · 资源与性能",
+    "study": "实验卡",
+    "title": "计时先写清边界"
+  },
+  {
+    "page": 86,
+    "id": "experiment-matrix",
+    "chapter": "自测与实验",
+    "study": "实验卡",
+    "title": "让每个实验都有能被推翻的预测"
+  },
+  {
+    "page": 87,
+    "id": "paper-reading",
+    "chapter": "论文与发展脉络",
+    "study": "预备",
+    "title": "怎样把《Attention Is All You Need》读成证据链？"
+  },
+  {
+    "page": 88,
+    "id": "normalization-history",
+    "chapter": "论文与发展脉络",
+    "study": "拓展",
+    "title": "归一化的发展：拆开设计问题，再做对照"
+  },
+  {
+    "page": 89,
+    "id": "attention-efficiency",
+    "chapter": "论文与发展脉络",
+    "study": "拓展",
+    "title": "两类效率改进：实现同一计算，或改变模型结构"
+  },
+  {
+    "page": 90,
+    "id": "parallel-generation",
+    "chapter": "论文与发展脉络",
+    "study": "拓展",
+    "title": "“并行预测再纠正”包含不同路线"
+  },
+  {
+    "page": 91,
+    "id": "image-next",
+    "chapter": "图片输入的下一步",
+    "study": "预备",
+    "title": "图像特征如何进入语言模型？"
+  },
+  {
+    "page": 92,
+    "id": "test-u00-u01",
+    "chapter": "自测与实验",
+    "study": "自测",
+    "title": "U00–U01：先解释证据和目标"
+  },
+  {
+    "page": 93,
+    "id": "review",
+    "chapter": "自测与实验",
+    "study": "自测",
+    "title": "用计算依赖来检查理解"
+  },
+  {
+    "page": 94,
+    "id": "test-u03",
+    "chapter": "自测与实验",
+    "study": "自测",
+    "title": "U03：用失败对照证明检查有用"
+  },
+  {
+    "page": 95,
+    "id": "delivery-state",
+    "chapter": "自测与实验",
+    "study": "实验卡",
+    "title": "第一单元的验收，需要哪些独立证据？"
+  },
+  {
+    "page": 96,
+    "id": "source-index",
+    "chapter": "原始来源与接续",
+    "study": "参考",
+    "title": "按问题回到原始来源"
+  }
+]

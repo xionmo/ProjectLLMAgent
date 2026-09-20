@@ -1,0 +1,158 @@
+<section class="slide" id="unit-cover" data-chapter="导览" data-study="备课说明" aria-roledescription="幻灯片">
+<h1>第一单元：从调用边界到完整模型计算</h1>
+<p class="lead">U00–U03 按知识依赖编排。每一段都有对象、公式、用途、形状或可核对的例子。</p>
+<div class="cover-route"><a href="#model-agent" data-jump="model-agent"><strong>U00 · 模型与系统边界</strong><span>上下文、参数、工具、状态与图片输入</span></a><a href="#next-token" data-jump="next-token"><strong>U01 · 概率与学习目标</strong><span>logits、损失、梯度、标签与数据</span></a><a href="#architecture-atlas" data-jump="architecture-atlas"><strong>U02 · 完整 Transformer</strong><span>输入 → Encoder → Decoder → 词表输出</span></a><a href="#implementation-plan" data-jump="implementation-plan"><strong>U03 · 实现、训练与推理</strong><span>检查点、生成、KV、内存与性能</span></a></div>
+<div class="key">“复习”是已有讨论；“补齐”是此前缺少的连接；“预备”是提前准备的后续内容。材料齐全不等于已经掌握或跑通实验。</div>
+<p class="small">原 24 页回顾版继续保留。用第二页架构图或目录可直接打开某个模块；每页地址固定。</p>
+</section>
+
+<section class="slide" id="architecture-atlas" data-chapter="导览" data-study="完整导航" hidden aria-roledescription="幻灯片">
+<h2>完整架构导航：每个计算块都有对应章节</h2>
+<div class="columns diagram-layout"><div class="diagram architecture" data-diagram="architecture"></div><div><p>这张图展示原论文的完整结构，不代表当前学习进度。</p><div class="key">点击图中的模块，查看它的输入、计算和输出。</div><p><a href="#encoder-self-attention" data-jump="encoder-self-attention">Encoder self-attention</a><br><a href="#encoder-attention-addnorm" data-jump="encoder-attention-addnorm">第一次 Add &amp; Norm</a><br><a href="#encoder-ffn" data-jump="encoder-ffn">FFN 与非线性</a><br><a href="#encoder-second-norm" data-jump="encoder-second-norm">第二次 Add &amp; Norm</a></p><p class="small">输入/位置表示、Decoder 的各子层和词表输出也可以直接打开。图中省略 dropout。</p></div></div>
+<div class="source"><a href="https://arxiv.org/html/1706.03762v7#S3" target="_blank" rel="noreferrer">原论文图 1 与 §3</a></div>
+</section>
+
+<section class="slide" id="model-agent" data-chapter="U00 · 调用与系统" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>语言模型输出，与工具真正执行，是两件事</h2>
+<div class="flow"><div class="box">用户要求与上下文</div><div class="arrow">→</div><div class="box">模型输出<br>文字 / 工具建议</div><div class="arrow">→</div><div class="box">程序校验并执行工具</div><div class="arrow">→</div><div class="box">外部结果与验收</div></div>
+<div class="columns"><div class="panel"><h3>模型负责什么？</h3><p>根据输入产生输出分布，进而形成文字或结构化调用建议。</p></div><div class="panel soft"><h3>系统负责什么？</h3><p>决定是否执行、记录参数和结果、处理失败与重复请求、验证任务完成。</p></div></div>
+<div class="key">“我已完成”是模型输出。实际完成还需要工具轨迹、文件或外部状态的证据。</div>
+</section>
+
+<section class="slide" id="context-parameters" data-chapter="U00 · 调用与系统" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>纠正信息进入上下文，不等于模型被训练了</h2>
+<div class="columns"><div class="panel"><h3>固定参数推理</h3><p>原上下文 → 回答错误<br>追加纠正 → 新的上下文 → 回答改变</p><p>这可以在 θ 完全不变的情况下发生。</p></div><div class="panel soft"><h3>参数训练</h3><p>构造目标 → 算损失 → 反向传播 → 优化器更新 θ。</p><p>必须有明确的训练计算与更新步骤。</p></div></div>
+<div class="math" data-math="unitModelConditional"></div>
+<p class="small">单个样本可以用于调试或产生梯度，但它通常不足以评价泛化。不要从答对一道题反推模型权重已经更新。</p>
+</section>
+
+<section class="slide" id="trace-diagnosis" data-chapter="U00 · 调用与系统" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>图片数字算错：沿着证据定位第一次偏差</h2>
+<div class="table-wrap"><table><thead><tr><th>检查点</th><th>要看什么</th><th>能缩小哪类问题</th></tr></thead><tbody><tr><td>输入与读取</td><td>实际图片、模型读出的数字</td><td>图片传输、预处理或识别</td></tr><tr><td>工具调用</td><td>真实调用参数，而非事后文字解释</td><td>数字提取与调用构造</td></tr><tr><td>工具与回答</td><td>工具返回值、最后答案</td><td>计算执行或结果转述</td></tr></tbody></table></div>
+<div class="key">若计算器确实收到了 100 和 180，应先核对这是否是图片中的数字；换成干净数字图，是一种受控对照。</div>
+<p class="small">普通识别错误、推理时的对抗输入和训练数据投毒是不同假设。输出异常本身不能证明攻击意图。</p>
+</section>
+
+<section class="slide" id="state-lifetimes" data-chapter="U00 · 调用与系统" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>把不同寿命的“状态”分开记账</h2>
+<div class="table-wrap"><table class="dense"><thead><tr><th>对象</th><th>由什么产生</th><th>典型寿命</th></tr></thead><tbody><tr><td>参数 θ</td><td>初始化、训练或加载 checkpoint</td><td>跨多次调用保存</td></tr><tr><td>中间激活</td><td>本次前向计算</td><td>当前计算；训练时部分用于反向</td></tr><tr><td>KV 缓存</td><td>某个前缀逐层算出的 K/V</td><td>绑定前缀、参数与位置的会话状态</td></tr><tr><td>消息上下文</td><td>系统收集和组织的输入</td><td>由 Agent / 应用维护</td></tr><tr><td>文件与工具状态</td><td>外部程序执行</td><td>可独立于模型进程存在</td></tr></tbody></table></div>
+<div class="key">清空消息、释放 KV、删除文件、重新训练，分别作用于不同对象，不能互相替代。</div>
+</section>
+
+<section class="slide" id="image-pipeline" data-chapter="U00 · 调用与系统" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>图片输入也需要一条真实的数据通路</h2>
+<div class="flow"><div class="box">图片字节</div><div class="arrow">→</div><div class="box">像素与预处理</div><div class="arrow">→</div><div class="box">视觉编码器</div><div class="arrow">→</div><div class="box">连接 / 融合</div><div class="arrow">→</div><div class="box">语言模型</div></div>
+<div class="columns"><div class="panel"><h3>表示不是同一个东西</h3><p>文件路径、压缩字节、像素张量、视觉特征和文字 token，分别有自己的类型与处理步骤。</p></div><div class="panel soft"><h3>先准备可验证的对照</h3><p>正图 / 无图 / 换图，保持问题和运行条件尽量一致，检查答案是否依赖正确的图像信息。</p></div></div>
+<p class="small">这里先建立全景；V01 再做真实模型实验。课件中的流程图不代表已经运行过图片模型。</p>
+</section>
+
+<section class="slide" id="experiment-contract" data-chapter="U00 · 调用与系统" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>一个实验先写清：改变什么，观察什么</h2>
+<div class="columns"><div class="panel"><h3>实验前</h3><p>问题与预测；输入和参数；改变的因素；保持不变的条件；判断标准。</p></div><div class="panel soft"><h3>实验后</h3><p>配置与版本；原始输出；误差和异常；与预测不符的证据；下一步可区分的解释。</p></div></div>
+<div class="key">GPU 能被查询、PyTorch 能使用 CUDA、一次训练真正成功，是三个不同的验证结果。</div>
+<p class="small">使用项目 E01 的环境采集与实验模板。训练环境、教学模型和缓存实验的执行成绩必须另行取得。</p>
+<div class="source"><a href="../../labs/E01/README.md" target="_blank" rel="noreferrer">E01 操作入口</a> · <a href="../../templates/实验预注册与报告.md" target="_blank" rel="noreferrer">实验模板</a></div>
+</section>
+
+<section class="slide" id="next-token" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>语言模型学习的是条件分布</h2>
+<div class="math" data-math="unitJoint"></div>
+<p>预测 xₜ 时，条件是它之前的 token。对一个序列的概率，可以按这条链逐项相乘。</p>
+<div class="columns"><div class="panel"><h3>一次预测</h3><p>给定前缀，输出下一位置对整个词表的分布。</p></div><div class="panel soft"><h3>一段生成</h3><p>选出一个 token，加入前缀，再调用相同参数的模型继续。</p></div></div>
+<p class="small">“按 token 生成”描述输出顺序；每次前向中的矩阵计算仍可大量并行。</p>
+</section>
+
+<section class="slide" id="vocabulary-logits" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>logits：给每个候选一个实数分数</h2>
+<div class="math" data-math="unitLogits"></div>
+<div class="table-wrap"><table><thead><tr><th>对象</th><th>每个分量对应什么</th></tr></thead><tbody><tr><td>隐藏表示 hₜ</td><td>模型内部的特征坐标</td></tr><tr><td>词表 logits zₜ</td><td>一个候选 token</td></tr><tr><td>注意力分数 sᵢⱼ</td><td>一个来源位置 j</td></tr></tbody></table></div>
+<div class="key">普通全词表输出头一次给所有候选打分；训练标签提供本次观测到的目标，并不逐个手工提供“错误候选”。</div>
+</section>
+
+<section class="slide" id="softmax-basics" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>softmax 把一组分数变成相对概率</h2>
+<div class="math" data-math="unitSoftmax"></div>
+<div class="math compact" data-math="unitSoftmaxShift"></div>
+<p>共同加一个常数会在分子、分母中约掉；实现时常减去最大分数，避免指数溢出。</p>
+<div class="key">影响概率的是分数之间的相对关系。共同平移不变，整体乘一个系数通常会改变概率的集中程度。</div>
+<p class="small">ReLU 本身不保证输出和为 1。内部激活、概率变换与损失函数需要按用途区分。</p>
+</section>
+
+<section class="slide" id="cross-entropy" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>交叉熵：目标 token 获得了多少概率？</h2>
+<div class="math" data-math="unitCE"></div>
+<div class="columns"><div class="panel"><h3>p(目标) = 0.9</h3><p>L ≈ 0.105</p></div><div class="panel soft"><h3>p(目标) = 0.6</h3><p>L ≈ 0.511</p></div></div>
+<p>给真实目标更高概率，会降低这一个位置的负对数似然。</p>
+<div class="key">单个样本损失更低，不足以说明泛化更强。训练、验证、测试损失需要连同数据切分和信息可见性一起解释。</div>
+</section>
+
+<section class="slide" id="gradient-meaning" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>梯度：损失对各个变量的局部变化率</h2>
+<div class="math" data-math="unitCEGradient"></div>
+<p>对 one-hot 目标的 softmax 交叉熵，正确类别的导数为 pᵧ − 1；其它类别为 pⱼ。</p>
+<div class="columns"><div class="panel"><h3>导数的符号</h3><p>说明小幅改变该变量时，损失往哪个方向变化。</p></div><div class="panel soft"><h3>导数的大小</h3><p>说明局部敏感程度；实际更新还由学习率与优化器决定。</p></div></div>
+<p class="small">只看 softmax 概率曲线是否变平，不能判断完整损失到参数的训练信号。</p>
+</section>
+
+<section class="slide" id="gradient-chain" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>输出梯度，怎样传回模型参数？</h2>
+<div class="math" data-math="unitGradientChain"></div>
+<div class="flow"><div class="box">参数 θ</div><div class="arrow">→</div><div class="box">多层计算 → logits</div><div class="arrow">→</div><div class="box">概率与损失</div></div>
+<p>反向传播沿相反方向应用链式法则，汇总所有依赖该参数的路径。</p>
+<div class="key">同一个参数在多个位置使用时，各位置对它的梯度会累加。一次前向产生激活，反向计算梯度，优化器再更新参数。</div>
+</section>
+
+<section class="slide" id="parameter-update" data-chapter="U01 · 概率与学习" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>梯度与参数更新量不是同一个量</h2>
+<div class="math" data-math="unitSGD"></div>
+<div class="panel soft"><p>最简单的梯度下降：若梯度 g = −0.6，学习率 η = 0.1，</p><div class="math" data-math="unitUpdateExample"></div><p>参数增加约 0.06；这与“给用户消息加一句纠正”是不同操作。</p></div>
+<p class="small">这只是单步 SGD 的例子。后面的 AdamW 会引入梯度统计与权重衰减，但仍需显式执行 optimizer.step。</p>
+</section>
+
+<section class="slide" id="label-shift" data-chapter="U01 · 目标与数据" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>输入与标签错开一位</h2>
+<div class="table-wrap"><table><thead><tr><th>完整序列</th><th>BOS</th><th>A</th><th>B</th><th>EOS</th></tr></thead><tbody><tr><th>输入</th><td>BOS</td><td>A</td><td>B</td><td>—</td></tr><tr><th>目标</th><td>A</td><td>B</td><td>EOS</td><td>—</td></tr></tbody></table></div>
+<pre><code>inputs = tokens[:, :-1]
+labels = tokens[:, 1:]</code></pre>
+<div class="key">预测目标 B 的输入位置是 A。虽然 B 也在整条训练数组中，该预测位置不能通过注意力读取它。</div>
+<p class="small">BOS 是起始标记，EOS 是结束标记；其具体 ID 由 tokenizer 约定。</p>
+</section>
+
+<section class="slide" id="teacher-forcing" data-chapter="U01 · 目标与数据" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>训练能并行预测，生成却依赖已生成的前缀</h2>
+<div class="columns"><div class="panel"><h3>Teacher forcing</h3><p>训练时提供真实序列，用 causal mask 限制每个位置的可见范围。</p><p>各位置的预测与损失可以在一次前向中一起计算。</p></div><div class="panel soft"><h3>自回归生成</h3><p>下一步输入包含模型实际生成的 token。</p><p>早先选错的 token 可能改变之后遇到的上下文。</p></div></div>
+<div class="key">低训练损失与长段生成表现不是同一项证据。需要在仅给前缀的条件下单独检验生成。</div>
+</section>
+
+<section class="slide" id="causal-probe" data-chapter="U01 · 目标与数据" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>怎样检验“较早位置读不到未来”？</h2>
+<ol><li>固定参数、前缀和位置设置，排除 dropout 等随机性。</li><li>只替换未来目标 token。</li><li>比较较早位置的 logits 是否保持不变。</li></ol>
+<div class="columns"><div class="panel"><h3>正反对照</h3><p>正确的各层 causal mask 应保持不变；故意去掉 mask 的版本应被检查发现。</p></div><div class="panel soft"><h3>为什么不能只查末层？</h3><p>前层若已带入未来信息，末层再遮罩也不一定能消除它。</p></div></div>
+<p class="small">项目的 future_token_probe 是固定权重机制探针，不是已训练的完整 Transformer。</p>
+</section>
+
+<section class="slide" id="loss-mask" data-chapter="U01 · 目标与数据" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>attention mask 与 loss mask 管的是不同事情</h2>
+<div class="math" data-math="unitMaskedLoss"></div>
+<div class="table-wrap"><table><thead><tr><th>对象</th><th>作用</th><th>典型范围</th></tr></thead><tbody><tr><td>Mᵢⱼ：注意力遮罩</td><td>位置 i 能从 j 读取信息吗？</td><td>query × key 位置</td></tr><tr><td>mₜ：目标有效标记</td><td>这个预测位置计入损失吗？</td><td>各目标位置</td></tr></tbody></table></div>
+<div class="key">PAD 标签通常不计入目标平均；但只忽略它的 loss，不等于已经屏蔽了注意力里的无效来源。</div>
+<p class="small">没有有效目标的位置不能直接除以零。课程先用二值 m；若设计额外权重，需说明加权与归一化规则。</p>
+</section>
+
+<section class="slide" id="tokenization" data-chapter="U01 · 目标与数据" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>token 是编码单位，不一定是一个字或一个词</h2>
+<div class="columns"><div class="panel"><h3>课程 byte 基线</h3><p>UTF-8 字节 0–255，再加专用 BOS、EOS、PAD，共 259 个 ID。</p><p>“茶”的 UTF-8 为 E8 8C B6：一个汉字对应三个 byte token。</p></div><div class="panel soft"><h3>BPE 的一次合并</h3><p>b a n a n a<br>选择相邻对 a n → an<br>得到 b an an a</p><p class="small">这里只示意一次合并；实际实现要固定边界、频次与平局规则。</p></div></div>
+<div class="key">先划分训练数据，再学习 BPE 词表；检查编码解码往返。普通 byte ID 不能随意兼作 PAD。</div>
+</section>
+
+<section class="slide" id="split-generalization" data-chapter="U01 · 目标与数据" data-study="复习" hidden aria-roledescription="幻灯片">
+<h2>评价前，先问测试到底独立在哪里</h2>
+<ul><li>按来源、文档或模板族划分，避免近重复内容跨集合。</li><li>验证时也要满足真正预测时的信息可见性。</li><li>单次低训练损失不能证明泛化，也不能单独诊断过拟合。</li><li>不同 tokenizer 的 token perplexity 不能直接当成同一口径排名。</li></ul>
+<div class="key">先统一数据、预测位置和分母，再比较模型。必要时在同一原始文本上，用完整序列似然换算共同的 byte 口径。</div>
+</section>
+
+<section class="slide" id="objective-choice" data-chapter="U01 · 目标与数据" data-study="预备" hidden aria-roledescription="幻灯片">
+<h2>开放式问题有多个好答案，训练目标怎么理解？</h2>
+<div class="columns"><div class="panel"><h3>一个参考答案</h3><p>它是条件分布的一次观测。普通 token NLL 提高这条示范的概率。</p><p>没有被选作本次标签的 token，不自动等于所有语境下都不合理。</p></div><div class="panel soft"><h3>任务质量</h3><p>多样示范、教师分布、偏好和任务级奖励，会表达不同监督信息。</p><p>任务评价还要检查正确性、约束和可接受结果的范围。</p></div></div>
+<div class="key">先定义输出代表什么、可接受什么结果，再选概率模型、损失与评价。后续 U16–U18 会展开后训练目标。</div>
+</section>

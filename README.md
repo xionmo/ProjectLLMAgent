@@ -19,8 +19,11 @@
 
 ## 可交互课件
 
+- [第一单元 U00—U03 完整翻页课件（96 页）](docs/lessons/unit-01-complete-slides.html) · [架构导航](docs/lessons/unit-01-complete-slides.html#architecture-atlas) · [覆盖清单](docs/lessons/unit-01-coverage.md)：从模型调用、概率与梯度，走完 Encoder 和 Decoder 的计算，再接手写实现、训练、KV 缓存与实验。相关页面带可暂停、逐步和重播的显微计算流；架构图可跳到对应章节。
 - [课件 01：注意力符号与手算](docs/lessons/attention-symbols-01.html)：以数学排版和可调计算区分 r/s/a、单个贡献与汇合结果，并核对参数更新量。
-- [课件 02：Transformer 翻页版（24 页）](docs/lessons/transformer-slides.html) · [详细参考](docs/lessons/transformer-residual-map.html)：按固定主题回顾注意力、残差、LayerNorm、完整 Encoder 层与交叉注意力；支持目录、键盘翻页、阅读位置保存和打印。
+- [Transformer 精简回顾版（24 页）](docs/lessons/transformer-slides.html) · [详细参考](docs/lessons/transformer-residual-map.html)：保留原页序和地址，回顾注意力、残差、LayerNorm、完整 Encoder 层与交叉注意力；补入中英文术语列、分数缩放的完整推导和显微计算流。
+
+两套翻页课件分别保存阅读位置，均可离线阅读、按目录或键盘翻页、全屏展示及打印为 PDF。完整版已备齐 U00—U03 的讲解、自测答案与实验卡；页面上的“复习 / 补齐 / 预备”等标签说明材料用途，不代表已掌握或已运行实验。贯穿整层的 Encoder 小矩阵算例附有[精确数值与参数](docs/lessons/unit-01-encoder-example.json)，它是确定性计算核对，不是训练成绩。
 
 ## 学习回顾
 
@@ -65,6 +68,15 @@ python3 scripts/render_document.py
 python3 scripts/render_document.py docs/课程实施方案-v0.1.md docs/第一单元-模型计算与实验基线-v0.1.md
 ```
 
-交互课件位于 docs/lessons/，其 HTML 是直接维护的源文件，不用上述静态 Markdown 渲染器覆盖。静态教案与阶段回顾仍从 Markdown 生成阅读版。
+交互课件位于 docs/lessons/，不用上述静态 Markdown 渲染器覆盖。注意力手算、详细参考与 24 页回顾版直接维护 HTML；完整第一单元从 24 页中的既有主题和 unit01/ 下的补充页面、公式及架构图构建。静态教案与阶段回顾仍从 Markdown 生成阅读版。
+
+修改共享显微计算流或缩放推导后，先将 interactive/ 中的源内容同步到回顾版，再构建完整版；只修改 unit01/ 时可仅执行第二条命令：
+
+```bash
+python3 scripts/sync_course_interactions.py
+python3 scripts/build_unit01_slides.py
+```
+
+构建只依赖 Python 标准库，同时更新页码索引、覆盖清单及 Encoder 算例的数值文件。生成的完整版内嵌样式、数学排版和脚本，不依赖外部服务。
 
 翻页课件保留已经发布的主题页、页面 ID 与页序。新增知识按主题追加页面；课程推进通过切换阅读位置完成，不把旧页替换成新的讲解内容。必要的勘误在原主题页修正，详细推导保留在配套参考页。

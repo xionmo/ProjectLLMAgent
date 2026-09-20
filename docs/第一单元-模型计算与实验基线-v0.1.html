@@ -124,6 +124,7 @@ pre code { padding: 0; background: none; }
 <p>所属课程：《LLM 智能体的原理、系统与协作》。对接 E01、E02；主要模块 M1、M2，提前连接 M4、M6、M8、M9。</p>
 <p>本包包含可直接用于备课的讲解顺序、练习、实验契约和答辩题。环境采集脚本与固定权重注意力依赖探针已实现；完整教学模型、训练与缓存实验仍待实施，没有已训练模型的成绩。</p>
 <p>返回：<a href="%E8%AF%BE%E7%A8%8B%E5%AE%9E%E6%96%BD%E6%96%B9%E6%A1%88-v0.1.md">课程实施方案</a> · <a href="%E5%9F%B9%E5%85%BB%E7%9B%AE%E6%A0%87%E4%B8%8E%E8%83%BD%E5%8A%9B%E6%A0%87%E5%87%86-v0.4.md">能力标准</a> · <a href="../labs/E01/README.md">E01 操作入口</a></p>
+<p>课件入口（2026-09-21）：<a href="lessons/unit-01-complete-slides.html">U00—U03 完整翻页版，96 页</a> · <a href="lessons/unit-01-complete-slides.html#architecture-atlas">可点击的架构导航</a> · <a href="lessons/unit-01-coverage.md">覆盖清单</a> · <a href="lessons/transformer-slides.html">原 24 页精简回顾</a>。完整版补齐从输入表示、Encoder self-attention 到两次 Add &amp; Norm、FFN 与层堆叠的计算链，再接 Decoder 和 U03；公式、显微计算流、连贯数值例、自测与实验卡已备好。备课完成与学习者掌握、模型实验完成分别记录。</p>
 <h2 id="section-2">1. 学完这一单元具体能做什么</h2>
 <p>学习者能够从一条 token 序列推导训练目标，写出小型 decoder 的计算与状态，解释权重更新和逐 token 生成的差别，并证明 KV 复用保持同一前缀下的计算结果。</p>
 <p>单元出口是“可解释的基线”，不是全部 M1/M2 已达 L3。随后还要完成受控架构/数据比较、失败归因与陌生条件迁移。</p>

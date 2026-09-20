@@ -8,6 +8,8 @@
 
 返回：[第一单元](第一单元-模型计算与实验基线-v0.1.md) · [实施方案](课程实施方案-v0.1.md)
 
+配套翻页课件：[完整架构导航](lessons/unit-01-complete-slides.html#architecture-atlas) · [Encoder self-attention](lessons/unit-01-complete-slides.html#encoder-self-attention) · [分数缩放的假设与推导](lessons/unit-01-complete-slides.html#scaling-assumptions) · [贯穿一层的数值算例](lessons/unit-01-complete-slides.html#encoder-case-setup) · [论文阅读检查表](lessons/unit-01-complete-slides.html#paper-reading)。课件用于逐步讲解和回顾，不代替原文，也不代表已经完成对应训练或复现。
+
 ## 1. 按理解依赖阅读，并最终覆盖全文
 
 | 轮次 | 阅读位置 | 要解决的问题 | 当轮的小任务 |
