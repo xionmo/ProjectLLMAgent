@@ -27,6 +27,9 @@ ORDER = [
     "generation", "kv-cache", "cache-offset", "cache-equivalence", "memory-budget", "cpu-to-cuda", "benchmarking",
     "experiment-matrix", "paper-reading", "normalization-history", "attention-efficiency", "parallel-generation", "image-next",
     "test-u00-u01", "review", "test-u03", "delivery-state", "source-index",
+    # Append role-focused supplements so existing page numbers and anchors stay stable.
+    "ffn-feature-detectors", "ffn-input-gates", "ffn-output-directions",
+    "ffn-two-inputs", "ffn-piecewise", "ffn-writeback",
 ]
 
 REVIEW_IDS = {
@@ -149,6 +152,8 @@ def main():
     html = html.replace("projectllm-transformer-slides-position-v1", "projectllm-unit01-complete-position-v1")
     html = html.replace('aria-valuemax="24"', f'aria-valuemax="{len(ORDER)}"').replace("第 1 / 24 页", f"第 1 / {len(ORDER)} 页")
     html = html.replace("chapter.textContent=slide.dataset.chapter;", "chapter.textContent=slide.dataset.chapter+' · '+slide.dataset.study;")
+    html = re.sub(r'<a href="unit-01-complete-slides.html#[^"]+" data-ffn-detail="([^"]+)" target="_blank" rel="noreferrer">',
+                  lambda m: f'<a href="#{m[1]}" data-jump="{m[1]}">', html)
     html = html.replace("par(v('B'))", "par(sub(v('N'),v('h')))")
     case = encoder_example()
     (LESSONS / "unit-01-encoder-example.json").write_text(json.dumps(case, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -670,5 +670,47 @@
     "chapter": "原始来源与接续",
     "study": "参考",
     "title": "按问题回到原始来源"
+  },
+  {
+    "page": 97,
+    "id": "ffn-feature-detectors",
+    "chapter": "FFN 职责详解",
+    "study": "详解 1/6",
+    "title": "W₁：从当前表示中构造候选特征"
+  },
+  {
+    "page": 98,
+    "id": "ffn-input-gates",
+    "chapter": "FFN 职责详解",
+    "study": "详解 2/6",
+    "title": "ReLU：按当前输入开关通道，并保留强度"
+  },
+  {
+    "page": 99,
+    "id": "ffn-output-directions",
+    "chapter": "FFN 职责详解",
+    "study": "详解 3/6",
+    "title": "W₂：每个通道对应一个输出贡献方向"
+  },
+  {
+    "page": 100,
+    "id": "ffn-two-inputs",
+    "chapter": "FFN 职责详解",
+    "study": "详解 4/6",
+    "title": "同一组参数，两个输入选择不同的通道"
+  },
+  {
+    "page": 101,
+    "id": "ffn-piecewise",
+    "chapter": "FFN 职责详解",
+    "study": "详解 5/6 · 可选推导",
+    "title": "为什么无法一般性地合成一个固定变换？"
+  },
+  {
+    "page": 102,
+    "id": "ffn-writeback",
+    "chapter": "FFN 职责详解",
+    "study": "详解 6/6",
+    "title": "“写回”发生在哪里？接回第二个 Add & Norm"
   }
 ]

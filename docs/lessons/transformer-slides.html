@@ -220,10 +220,16 @@ dialog{width:min(760px,94vw);max-height:86dvh;border:1px solid var(--line);borde
 
 <section class="slide" id="encoder-ffn" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
 <h2>Feed Forward：进一步处理每个位置的特征</h2>
-<p class="lead">取 Y<sub>E</sub> 的第 i 行，记作向量 yᵢ。它进入一个小型前馈网络：</p>
-<div class="math" data-math="ffnPosition"></div>
-<div class="columns"><div class="panel"><h3>输入已有上下文</h3><p>注意力已把来源信息汇入 yᵢ。</p><p>FFN 在这个位置内部，学习怎样非线性地重新组合这些特征。</p></div><div class="panel soft"><h3>输出是什么？</h3><p>fᵢ 仍然是特征向量，宽度回到主干 d。</p><p>各位置的 fᵢ 排成矩阵，就是 F<sub>E</sub>。</p></div></div>
-<div class="key">“逐位置”指本次运算不重新读其它行；输入本身可以已经包含上下文。</div>
+<p class="lead">输入 yᵢ 是 Y<sub>E</sub> 的第 i 行，已经汇入上下文。先看各阶段要解决什么问题：</p>
+<div class="math compact" data-math="ffnPosition"></div>
+<div class="table-wrap"><table class="dense"><thead><tr><th>阶段</th><th>职责</th><th>要回答的问题</th></tr></thead><tbody>
+<tr><td>W₁、b₁</td><td>构造候选特征</td><td>当前表示对哪些内部特征方向有响应？</td></tr>
+<tr><td>ReLU</td><td>按输入开关通道</td><td>这一次哪些响应通过，保留多大强度？</td></tr>
+<tr><td>W₂、b₂</td><td>重组输出贡献</td><td>通过的响应分别向主干宽度的输出贡献什么？</td></tr>
+</tbody></table></div>
+<div class="key">W₁ 提特征 → ReLU 做开关 → W₂ 重组并准备写回。得到 fᵢ 后，还要通过残差相加更新主干。</div>
+<p class="small">“特征检测器”是计算角色的类比，不保证每个通道都有可命名的语义。FFN 本次逐位置计算；yᵢ 本身可以已有上下文。</p>
+<div class="source"><a href="unit-01-complete-slides.html#ffn-feature-detectors" data-ffn-detail="ffn-feature-detectors" target="_blank" rel="noreferrer">展开：W₁、ReLU、W₂ 的六页职责详解</a></div>
 </section>
 
 <section class="slide" id="ffn-shapes" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
@@ -231,15 +237,17 @@ dialog{width:min(760px,94vw);max-height:86dvh;border:1px solid var(--line);borde
 <div class="flow"><div class="box">Y<sub>E</sub><br><strong>4 × 512</strong></div><div class="arrow">→</div><div class="box">乘 W₁、加 b₁<br><strong>4 × 2048</strong></div><div class="arrow">→</div><div class="box">ReLU<br><strong>4 × 2048</strong></div><div class="arrow">→</div><div class="box">乘 W₂、加 b₂<br><strong>4 × 512</strong></div></div>
 <div class="columns"><div><p>W₁：512 × 2048<br>b₁：2048 维</p><p>W₂：2048 × 512<br>b₂：512 维</p></div><div class="panel soft"><p>位置数一直是 4。</p><p>改变的是每个位置的特征宽度。</p><p class="small">512 / 2048 是原论文设置；4 个源位置是教学假设。中间宽度 d<sub>ff</sub> 是设计选择。</p></div></div>
 <p class="small">同一层各位置共享这组 W₁、b₁、W₂、b₂；不同 Encoder 层各有自己的参数。</p>
+<div class="source"><a href="unit-01-complete-slides.html#ffn-output-directions" data-ffn-detail="ffn-output-directions" target="_blank" rel="noreferrer">展开：W₁ 的列检测什么，W₂ 的行贡献什么？</a></div>
 </section>
 
 <section class="slide" id="ffn-nonlinearity" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
 <h2>为什么中间要放 ReLU？</h2>
-<div class="flow"><div class="box">三个中间分量<br><strong>(2, −1, 0.5)</strong></div><div class="arrow">→</div><div class="box">ReLU：逐分量取 max(0, t)</div><div class="arrow">→</div><div class="box"><strong>(2, 0, 0.5)</strong></div></div>
-<p>如果没有中间的非线性，两次带偏置的线性变换可以合成一次：</p>
+<p>ReLU 逐分量取 max(0, t)：(2.3, −1.7, 0.8) → (2.3, 0, 0.8)。</p>
+<div class="key">输入改变时，通过的中间通道可以改变；W₁、W₂ 参数不必改变。开关保留正响应的强度，不把它们全部变成 1。</div>
+<p>如果移除 ReLU，两次带偏置的线性变换可以合成一次固定的仿射变换：</p>
 <div class="math compact" data-math="ffnWithoutActivation"></div>
-<div class="key">非线性使整个 FFN 一般无法再压缩成一次固定的线性变换，增加了它对特征模式的表达能力。</div>
-<p class="small">这里使用原论文的 ReLU 版本。它处理内部特征，不负责把分数变成概率。</p>
+<p class="small">ReLU 自身没有可训练参数。它让 FFN 能表达分段仿射函数，一般不能再合并成一个固定仿射变换；它不判断“负数好坏”，也不输出概率。</p>
+<div class="source"><a href="unit-01-complete-slides.html#ffn-input-gates" data-ffn-detail="ffn-input-gates" target="_blank" rel="noreferrer">展开：输入相关的开关</a> · <a href="unit-01-complete-slides.html#ffn-two-inputs" data-ffn-detail="ffn-two-inputs" target="_blank" rel="noreferrer">同一组参数，两种输入的手算</a></div>
 </section>
 
 <section class="slide" id="encoder-second-norm" data-chapter="完整 Encoder 层" hidden aria-roledescription="幻灯片">
@@ -508,13 +516,13 @@ dialog{width:min(760px,94vw);max-height:86dvh;border:1px solid var(--line);borde
       ['h̃_i','取同一个位置的全部特征分量。'],['μ_i、σ²_i','计算这一向量自己的均值与方差。'],['减 μ_i','每个分量减去同一个中心。'],['÷ √(σ²_i+ε)','缩放到较规整的尺度；ε 避免分母为零。'],['标准化向量','这是 γ、β 变换之前的中间结果。']]),
     affine:chain('显微结构：标准化之后的可学习变换',[
       ['标准化向量','均值与方差已经由当前输入确定。'],['逐分量乘 γ','γ 是可训练的缩放向量。'],['逐分量加 β','β 是可训练的平移向量。'],['h′_i','最终输出不必保持均值为零或方差为一。']]),
-    ffn:chain('显微结构：FFN 在每个位置内部处理特征',[
-      ['Y_E','输入已经包含注意力汇入的上下文。'],['W₁、b₁','形成更宽的中间特征；token 位置数不变。'],['ReLU','逐分量引入非线性。课程初版 decoder 另用 GELU。'],['W₂、b₂','组合回主干宽度。'],['F_E','得到 FFN 子层输出，每行仍对齐原位置。']]),
+    ffn:chain('显微结构：检测候选特征 → 按输入激活 → 重组贡献',[
+      ['Y_E','每个位置已有上下文表示；本次 FFN 不读取其他行。'],['W₁：提特征','W₁ 的每一列组合输入分量，配合 b₁ 形成一个候选特征响应。'],['ReLU：开关','非正响应归零，正响应保留原强度；哪些通道通过由当前输入决定。'],['W₂：重组','每个激活强度缩放 W₂ 对应行的输出方向，再求和并加 b₂。'],['F_E','得到主干宽度的贡献向量；随后加回 Y_E，才接入残差主干。']]),
     second:{title:'显微结构：第二次残差相加接的是 Y_E',nodes:[N('y','Y_E',0,1,0),N('ffn','FFN',1,0,1),N('f','F_E',2,0,1),N('add','Y_E + F_E',3,1,2),N('norm','LN_FFN',4,1,3),N('out','H_E next',5,1,4)],edges:[E('y','ffn'),E('ffn','f'),E('f','add'),E('y','add','low'),E('add','norm'),E('norm','out')],steps:['Y_E 是 FFN 的输入，也是这条旁路的起点。','同一组 FFN 参数逐位置作用，产生 F_E。','F_E 加回自己的输入 Y_E。','这一处 LayerNorm 重新计算统计量并使用自己的参数。','形成一层 Encoder 的输出，接到下一层。']},
     encoder:{title:'显微结构：一个完整 Encoder 层',nodes:[N('h','H_E',0,1,0),N('attn','Self-Attention',1,0,1),N('n1','Add & Norm 1',2,1,2),N('ffn','FFN',3,0,3),N('n2','Add & Norm 2',4,1,4)],edges:[E('h','attn'),E('attn','n1'),E('h','n1','low'),E('n1','ffn'),E('ffn','n2'),E('n1','n2','low')],steps:['进入这一层的整段源表示。','源位置之间读取已知上下文。','注意力输出加回 H_E，得到 Y_E。','逐位置执行非线性特征变换。','FFN 输出加回 Y_E，形成下一层输入。']},
     decoder:{title:'显微结构：原论文的一层 Decoder',nodes:[N('h','H：目标侧',0,1,0),N('a','因果自注意力',1,0,1),N('n1','Add & Norm 1',2,1,2),N('c','C：源侧',2,2,0),N('cross','交叉注意力',3,0,3),N('n2','Add & Norm 2',4,1,4),N('f','FFN',5,0,5),N('n3','Add & Norm 3',6,1,6)],edges:[E('h','a'),E('a','n1'),E('h','n1','low'),E('n1','cross'),E('c','cross'),E('cross','n2'),E('n1','n2','low'),E('n2','f'),E('f','n3'),E('n2','n3','low')],steps:['目标表示 H 与已知的 Encoder 输出 C 是不同来源。','先在目标侧作因果读取。','第一处残差归一化形成 Y₁。','用 Y₁ 查询 C，读取源信息。','将交叉读取结果加回 Y₁。','逐位置处理融合后的特征。','第三处残差归一化形成本层输出。']},
-    decoderffn:chain('显微结构：Decoder 的逐位置 FFN',[
-      ['Y₂','已经融合目标前缀与源信息的表示。'],['W₁、b₁','形成 Decoder 本层的中间特征。'],['ReLU','原论文在这里应用逐分量非线性。'],['W₂、b₂','回到主干宽度。'],['F','随后加回本次 FFN 输入 Y₂。']]),
+    decoderffn:chain('显微结构：Decoder 也先检测、再激活、再重组',[
+      ['Y₂','已经融合目标前缀与源信息的表示。'],['W₁：提特征','用 Decoder 本层的 W₁、b₁ 计算候选特征响应。'],['ReLU：开关','按当前输入让正响应通过，保留响应强度。'],['W₂：重组','激活强度乘各输出方向，再求和并加 b₂。'],['F','输出贡献随后加回本次 FFN 输入 Y₂。']]),
     stack:chain('显微结构：完整层的堆叠',[
       ['H_E⁽⁰⁾','词嵌入与位置编码形成第一层输入。'],['Encoder 1','执行完整四步，得到第一层输出。'],['Encoder 2…N','重复相同结构，各层参数分别学习。'],['C = H_E⁽ᴺ⁾','最终仍是按源位置排列的上下文矩阵。']]),
     cross:{title:'显微结构：目标侧提问，源侧提供内容',nodes:[N('y','Y₁：目标',0,0,0),N('c','C：源',0,2,0),N('q','Q',1,0,1),N('k','K',1,1,1),N('v','V',1,2,1),N('a','QKᵀ → A',2,0.5,2),N('o','AV → O',3,1,3),N('u','组合 → Uc',4,1,4)],edges:[E('y','q'),E('c','k'),E('c','v'),E('q','a'),E('k','a'),E('a','o'),E('v','o','low'),E('o','u')],steps:['目标侧和源侧是两条不同序列。','Q 由 Y₁ 产生，K/V 由 C 产生。','每个目标 query 对源位置匹配并归一化。','读取源侧 V；结果的行数仍由 query 数决定。','多头组合后，用结果更新 Decoder 的表示。']},
@@ -524,6 +532,9 @@ dialog{width:min(760px,94vw);max-height:86dvh;border:1px solid var(--line);borde
       ['输入、标签','按序列移位构造训练目标。'],['前向','用当前参数产生 logits。'],['loss','只对有效目标位置汇总损失。'],['backward','链式法则得到各参数梯度。'],['optimizer.step','优化器执行参数更新；前向本身不等于训练。']]),
     cache:{title:'显微结构：复用旧 K/V，计算当前 query',nodes:[N('h','新位置表示',0,0,0),N('old','已有 K/V',0,2,0),N('new','新 Q/K/V',1,0,1),N('keys','拼接 K/V',2,1,2),N('read','当前 Q 读取',3,1,3),N('out','输出、更新缓存',4,1,4)],edges:[E('h','new'),E('new','keys'),E('old','keys'),E('new','read','high'),E('keys','read'),E('read','out')],steps:['前缀不变、参数不变时，保留每层已有 K/V。','只为新增位置计算新的投影。','旧 K/V 与新增 K/V 按位置连接。','当前 query 使用正确的绝对位置和可见性。','产生本步输出，并保留增长后的缓存。']}
   };
+  flows.ffndetect={title:'显微结构：W₁ 的不同列检测不同方向',nodes:[N('y','yᵢ',0,1,0),N('w1','点积列 1 + b₁₁',1,0,1),N('w2','点积列 2 + b₁₂',1,1,1),N('wj','点积列 j + b₁ⱼ',1,2,1),N('t1','tᵢ₁',2,0,2),N('t2','tᵢ₂',2,1,2),N('tj','tᵢⱼ',2,2,2)],edges:[E('y','w1'),E('y','w2'),E('y','wj'),E('w1','t1'),E('w2','t2'),E('wj','tj')],steps:['同一位置的全部输入分量，提供给每个候选通道。','不同列对输入作不同的加权组合，并加对应偏置。','每个通道产生一个标量响应，合起来就是 tᵢ；尚未经过 ReLU。']};
+  flows.ffngate={title:'显微结构：逐通道开关，正响应保留强度',nodes:[N('t1','2.3',0,0,0),N('t2','−1.7',0,1,0),N('t3','0.8',0,2,0),N('g1','max(0, 2.3)',1,0,1),N('g2','max(0, −1.7)',1,1,1),N('g3','max(0, 0.8)',1,2,1),N('z1','2.3：通过',2,0,2),N('z2','0：关闭',2,1,2),N('z3','0.8：通过',2,2,2)],edges:[E('t1','g1'),E('t2','g2'),E('t3','g3'),E('g1','z1'),E('g2','z2'),E('g3','z3')],steps:['这里的三个数是 W₁、b₁ 已经算出的响应。','对每个分量独立应用相同函数，不做跨通道求和。','第 2 个通道本次无贡献；第 1、3 个分别以原强度进入 W₂。']};
+  flows.ffnwrite={title:'显微结构：强度乘输出方向，汇总成贡献',nodes:[N('z','zᵢ：激活强度',0,1,0),N('r1','zᵢ₁ × W₂ 行 1',1,0,1),N('r2','zᵢ₂ × W₂ 行 2',1,1,1),N('rj','zᵢⱼ × W₂ 行 j',1,2,1),N('sum','贡献求和',2,1,2),N('bias','b₂',2,2,0),N('f','相加 → fᵢ',3,1,3)],edges:[E('z','r1'),E('z','r2'),E('z','rj'),E('r1','sum'),E('r2','sum'),E('rj','sum'),E('sum','f'),E('bias','f')],steps:['zᵢ 是当前输入决定的激活；W₂、b₂ 是可训练参数。','每个标量强度乘对应整行方向，产生主干宽度的贡献向量。','把各通道的向量贡献相加；零强度通道在本次求和中贡献零。','加上 b₂ 得到 fᵢ。接下来残差连接会把它加回 yᵢ。']};
   flows.ffnshapes=chain('显微结构：特征宽度变化，位置数保持不变',[
     ['4 × 512','4 个位置，每个位置的主干宽度为 512。'],['W₁ → 4 × 2048','第一次带偏置的线性变换扩展特征宽度。'],['ReLU：2048','ReLU 后仍为 4 × 2048；逐元素非线性保持形状。'],['W₂ → 4 × 512','回到主干宽度，供残差相加。']]);
   flows.encoderfirst=residualNorm('显微结构：Encoder 第一次 Add & Norm','H_E','Self-Attention','U_E','LN_attn','Y_E');

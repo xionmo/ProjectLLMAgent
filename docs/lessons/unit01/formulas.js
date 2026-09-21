@@ -8,6 +8,24 @@
   const uPj=sub(v('p'),uJ),uZj=sub(uZ,uJ),uZi=sub(uZ,v('i'));
   const uExp=x=>sup(v('e'),x);
   const uDmodel=d,uDk=dk,uSource=sub(v('n'),v('s')),uTarget=sub(v('n'),uT);
+  // FFN role notation: t is preactivation; w_out is a W2 row, not attention Value.
+  const ffnY=sub(v('y'),v('i')),ffnT=sub(v('t'),v('i')),ffnZ=sub(v('z'),v('i')),ffnF=sub(v('f'),v('i'));
+  const ffnW1=sub(v('W'),num(1)),ffnW2=sub(v('W'),num(2)),ffnB1=sub(v('b'),num(1)),ffnB2=sub(v('b'),num(2));
+  const ffnWidth=sub(d,uText('ff')),ffnModel=sub(d,uText('model')),ffnOut=sup(sub(v('w'),v('j')),uText('out'));
+  forms.ffnRolePre=eq(ffnT,ffnY+ffnW1+op('+')+ffnB1)+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',ffnWidth);
+  forms.ffnRoleComponent=eq(sub(v('t'),v('ij')),sum(eq(v('ℓ'),num(1)),ffnModel)+sub(v('y'),v('iℓ'))+sub(par(ffnW1),v('ℓj'))+op('+')+sub(par(ffnB1),v('j')));
+  forms.ffnRoleGate=eq(sub(v('z'),v('ij')),call('max',num(0)+op(',')+sub(v('t'),v('ij'))));
+  forms.ffnRoleGateExample=vec([2.3,'−1.7',0.8])+op('→')+vec([2.3,0,0.8]);
+  forms.ffnRoleDirection=eq(ffnOut,sub(par(ffnW2),v('j')+op(',')+op(':')))+op('∈')+sup('<mi mathvariant="double-struck">R</mi>',ffnModel);
+  forms.ffnRoleOutput=eq(ffnF,ffnZ+ffnW2+op('+')+ffnB2);
+  forms.ffnRoleSum=forms.ffnRoleOutput+op('=')+sum(eq(v('j'),num(1)),ffnWidth)+sub(v('z'),v('ij'))+ffnOut+op('+')+ffnB2;
+  const ffnOutAt=j=>sup(sub(v('w'),num(j)),uText('out'));
+  forms.ffnRoleSumExample=eq(ffnF,num(2.3)+ffnOutAt(1)+op('+')+num(0)+ffnOutAt(2)+op('+')+num(0.8)+ffnOutAt(3)+op('+')+ffnB2);
+  forms.ffnRoleW1Example=eq(ffnW1,matrix([[1,'−1',0],[0,0,1]]));
+  forms.ffnRoleW2Example=eq(ffnW2,matrix([[1,1],['−1',1],[1,'−1']]));
+  const ffnDi=sub(v('D'),v('i')),ffnIndicator=j=>uText('1')+op('[')+sub(v('t'),v('i')+op(',')+j)+op('>')+num(0)+op(']');
+  forms.ffnRoleSwitchMatrix=eq(ffnDi,call('diag',ffnIndicator(num(1))+op(',')+op('…')+op(',')+ffnIndicator(ffnWidth)));
+  forms.ffnRolePiecewise=eq(ffnF,ffnY+par(ffnW1+ffnDi+ffnW2)+op('+')+par(ffnB1+ffnDi+ffnW2+op('+')+ffnB2));
   forms.unitModelConditional=uProb+par(v('y')+op('|')+uText('上下文'));
   forms.unitJoint=eq(uProb+par(sub(v('x'),num(1))+op(',')+op('…')+op(',')+sub(v('x'),v('T'))),'<munderover>'+op('∏')+row(eq(uT,num(1)))+v('T')+'</munderover>'+uProb+par(uXt+op('|')+uPrefix));
   forms.unitLogits=eq(sub(uZ,uT),sub(v('h'),uT)+sub(v('W'),uText('vocab'))+op('+')+v('b'));

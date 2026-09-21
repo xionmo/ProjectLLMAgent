@@ -83,11 +83,12 @@ details{border-top:1px solid var(--line);padding:14px 0;margin:6px 0}summary{cur
 <p>取 Y<sub>E</sub> 的第 i 行，记作向量 y<sub>i</sub>。同一层的 FFN 对每个位置都应用同一组参数：</p>
 <div class="formula" data-math="ffnPosition"></div>
 <div class="table-wrap"><table><thead><tr><th>步骤</th><th>发生什么</th><th>每个位置的向量宽度</th></tr></thead><tbody>
-<tr><td>第一次线性变换</td><td>y<sub>i</sub>W<sub>1</sub> + b<sub>1</sub>：将已有特征重新组合，形成中间特征。</td><td>d → d<sub>ff</sub></td></tr>
-<tr><td>ReLU</td><td>逐分量取 max(0, t)，引入非线性；例如三个中间分量 (2, −1, 0.5) 变成 (2, 0, 0.5)。</td><td>d<sub>ff</sub> → d<sub>ff</sub></td></tr>
-<tr><td>第二次线性变换</td><td>将激活后的中间特征乘 W<sub>2</sub>、加 b<sub>2</sub>，组合回主干宽度，得到 f<sub>i</sub>。</td><td>d<sub>ff</sub> → d</td></tr>
+<tr><td>W₁：构造候选特征</td><td>y<sub>i</sub>W<sub>1</sub> + b<sub>1</sub>：W₁ 每一列组合输入分量，加偏置后得到一个内部特征响应。</td><td>d → d<sub>ff</sub></td></tr>
+<tr><td>ReLU：按输入开关</td><td>逐分量取 max(0, t)：非正响应归零，正响应保留强度。输入改变时，通过的通道可以改变，参数不必改变。</td><td>d<sub>ff</sub> → d<sub>ff</sub></td></tr>
+<tr><td>W₂：重组输出贡献</td><td>每个激活强度乘 W₂ 的对应行方向，再求和并加 b₂，得到主干宽度的 f<sub>i</sub>，准备通过残差相加写回。</td><td>d<sub>ff</sub> → d</td></tr>
 </tbody></table></div>
 <p>W<sub>1</sub>、W<sub>2</sub> 是可训练矩阵，b<sub>1</sub>、b<sub>2</sub> 是可训练的偏置向量。原论文使用 d = 512、d<sub>ff</sub> = 2048；这是中间宽度的设计选择，不是 token 数量增加了。</p>
+<p>“检测器”是功能类比，不保证通道对应单一可命名语义。ReLU 没有自己的可训练权重，开关也不是只输出 0/1；W₂ 的方向可以有负分量。完整公式、W₁ 列与 W₂ 行的对应、同一组参数的两次输入计算，见<a href="unit-01-complete-slides.html#ffn-feature-detectors" target="_blank" rel="noreferrer">六页 FFN 职责详解</a>。</p>
 <div class="example"><strong>假设源序列有 4 个位置：</strong>Y<sub>E</sub> 为 4 × 512 → 第一次变换后为 4 × 2048 → ReLU 后仍为 4 × 2048 → F<sub>E</sub> 为 4 × 512。F<sub>E</sub> 的第 i 行就是 f<sub>i</sub>。</div>
 <p><strong>“逐位置”描述这一运算的依赖范围：</strong>第 i 行直接使用 y<sub>i</sub> 计算，不在此处重新读取其它行；但 y<sub>i</sub> 本身已经包含此前注意力带来的上下文。同一层共享参数，不等于把不同位置的输入混在一起。</p>
 <p>ReLU 的作用在于提供非线性。如果删掉它，两次带偏置的线性变换可以合并成一次：</p>

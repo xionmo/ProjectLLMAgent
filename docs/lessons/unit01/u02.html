@@ -157,6 +157,7 @@
 <h2>Decoder 的 FFN：对融合后的目标表示逐位置计算</h2>
 <div class="math" data-math="unitDecoderFFN"></div>
 <p>结构仍是线性变换 → ReLU → 线性变换。输入 Y₂ 已包含本层的目标读取与源侧读取结果。</p>
+<p>沿用同一职责解释：W₁ 构造候选特征，ReLU 按输入开关，W₂ 重组各通道的输出贡献。</p>
 <div class="key">同一 Decoder 层各位置共享这一组 FFN 参数；它不与 Encoder 的 FFN 自动共享参数。</div>
 <p class="small">目标有 n<sub>t</sub> 个位置，FFN 输出仍为 n<sub>t</sub> × d。</p>
 </section>

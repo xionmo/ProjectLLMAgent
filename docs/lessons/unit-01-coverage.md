@@ -1,6 +1,6 @@
 # 第一单元 U00–U03 完整课件覆盖清单
 
-共 96 页。备课完成不等于授课、独立掌握或模型实验完成。
+共 102 页。备课完成不等于授课、独立掌握或模型实验完成。
 
 回顾：此前已有讨论；补齐：补足计算链；预备：尚待逐项讲解；实验/自测：给出目标与验收，未伪造执行成绩。
 
@@ -102,6 +102,12 @@
 | 94 | 自测与实验 | 自测 | [U03：用失败对照证明检查有用](unit-01-complete-slides.html#test-u03) |
 | 95 | 自测与实验 | 实验卡 | [第一单元的验收，需要哪些独立证据？](unit-01-complete-slides.html#delivery-state) |
 | 96 | 原始来源与接续 | 参考 | [按问题回到原始来源](unit-01-complete-slides.html#source-index) |
+| 97 | FFN 职责详解 | 详解 1/6 | [W₁：从当前表示中构造候选特征](unit-01-complete-slides.html#ffn-feature-detectors) |
+| 98 | FFN 职责详解 | 详解 2/6 | [ReLU：按当前输入开关通道，并保留强度](unit-01-complete-slides.html#ffn-input-gates) |
+| 99 | FFN 职责详解 | 详解 3/6 | [W₂：每个通道对应一个输出贡献方向](unit-01-complete-slides.html#ffn-output-directions) |
+| 100 | FFN 职责详解 | 详解 4/6 | [同一组参数，两个输入选择不同的通道](unit-01-complete-slides.html#ffn-two-inputs) |
+| 101 | FFN 职责详解 | 详解 5/6 · 可选推导 | [为什么无法一般性地合成一个固定变换？](unit-01-complete-slides.html#ffn-piecewise) |
+| 102 | FFN 职责详解 | 详解 6/6 | [“写回”发生在哪里？接回第二个 Add & Norm](unit-01-complete-slides.html#ffn-writeback) |
 
 原 24 页回顾版的页面 ID 和页序保持不变。完整版独立保存阅读位置，架构图各模块链接到固定章节。
 

@@ -19,11 +19,13 @@
 
 ## 可交互课件
 
-- [第一单元 U00—U03 完整翻页课件（96 页）](docs/lessons/unit-01-complete-slides.html) · [架构导航](docs/lessons/unit-01-complete-slides.html#architecture-atlas) · [覆盖清单](docs/lessons/unit-01-coverage.md)：从模型调用、概率与梯度，走完 Encoder 和 Decoder 的计算，再接手写实现、训练、KV 缓存与实验。相关页面带可暂停、逐步和重播的显微计算流；架构图可跳到对应章节。
+- [第一单元 U00—U03 完整翻页课件（102 页）](docs/lessons/unit-01-complete-slides.html) · [架构导航](docs/lessons/unit-01-complete-slides.html#architecture-atlas) · [覆盖清单](docs/lessons/unit-01-coverage.md)：从模型调用、概率与梯度，走完 Encoder 和 Decoder 的计算，再接手写实现、训练、KV 缓存与实验。相关页面带可暂停、逐步和重播的显微计算流；架构图可跳到对应章节。
 - [课件 01：注意力符号与手算](docs/lessons/attention-symbols-01.html)：以数学排版和可调计算区分 r/s/a、单个贡献与汇合结果，并核对参数更新量。
 - [Transformer 精简回顾版（24 页）](docs/lessons/transformer-slides.html) · [详细参考](docs/lessons/transformer-residual-map.html)：保留原页序和地址，回顾注意力、残差、LayerNorm、完整 Encoder 层与交叉注意力；补入中英文术语列、分数缩放的完整推导和显微计算流。
 
 两套翻页课件分别保存阅读位置，均可离线阅读、按目录或键盘翻页、全屏展示及打印为 PDF。完整版已备齐 U00—U03 的讲解、自测答案与实验卡；页面上的“复习 / 补齐 / 预备”等标签说明材料用途，不代表已掌握或已运行实验。贯穿整层的 Encoder 小矩阵算例附有[精确数值与参数](docs/lessons/unit-01-encoder-example.json)，它是确定性计算核对，不是训练成绩。
+
+2026-09-22 根据学习笔记补充 [FFN 职责详解](docs/lessons/unit-01-complete-slides.html#ffn-feature-detectors)：W₁ 构造候选特征、ReLU 按输入开关、W₂ 重组输出贡献，再通过残差相加接入主干。保留原 96 页的页号，六页详解追加在第 97—102 页；第 49—51 页提供直达入口，详解结尾接回第 52 页。
 
 ## 学习回顾
 
